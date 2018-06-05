@@ -1,7 +1,6 @@
 import pytest 
 import pymongo
 
-
 def test_create_user(app):
     #Note: Must import here, because without the app_fixture the db connection does not exist
     from captaina.models import User
