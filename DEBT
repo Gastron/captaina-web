@@ -1,2 +1,0 @@
-Create custom Docker image based on postgres, where pg_config is available and psycopg2 is built from source.
-
