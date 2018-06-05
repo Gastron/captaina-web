@@ -1,18 +1,17 @@
-from sqlalchemy.ext.hybrid import hybrid_property
-from . import flask_bcrypt, db
+from . import flask_bcrypt, app
+import pymodm as modm
+import pymongo as mongo
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(64), unique=True)
-    _password = db.Column(db.String(128))
-    email = db.Column(db.String(128))    
+modm.connect(app.config["MONGO_DATABASE_URI"])
 
-    @hybrid_property
-    def password(self):
-        return self._password
+class User(modm.MongoModel):
+    username = modm.fields.CharField(required = True)
+    _password = modm.fields.CharField(required = True)
+    email = modm.fields.EmailField()
+    class Meta:
+        indexes = [mongo.operations.IndexModel([('username', mongo.TEXT)], unique = True)]
 
-    @password.setter
-    def password(self, plaintext):
+    def set_password(self, plaintext):
         self._password = flask_bcrypt.generate_password_hash(plaintext).decode('utf-8')
 
     def is_correct_password(self, plaintext):

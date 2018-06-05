@@ -2,14 +2,15 @@ version: '3.2'
 
 services:
   db:
-    image: postgres:latest
+    image: mongo:4.0-rc-xenial
     environment:
-      POSTGRES_PASSWORD: debug
-      POSTGRES_DB: debug_db
+      MONGO_INITDB_DATABASE: debug
+      MONGO_INITDB_ROOT_USERNAME: root 
+      MONGO_INITDB_ROOT_PASSWORD: debug
     ports:
-      - "5432:5432"
+      - 27017:27017
     volumes:
-      - dbdata:/var/lib/postgresql/data
+      - dbdata:/data/db
 
 volumes:
   dbdata:
