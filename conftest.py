@@ -2,36 +2,31 @@ import pytest
 from captaina import create_app
 import pymodm
 import pymongo
+import threading
 
-TEST_DB_URI = "mongodb://root:debug@localhost:27017/test?authSource=admin"
+COUNTER_LOCK = threading.Lock()
+with COUNTER_LOCK:
+    db_counter = 0 
+TEST_DB_TEMPLATE = "mongodb://root:debug@localhost:27017/{dbname}?authSource=admin"
 
 @pytest.fixture
 def app():
+    global db_counter
+    with COUNTER_LOCK:
+        dbname = 'test' + str(db_counter)
+        test_db_uri = TEST_DB_TEMPLATE.format(dbname=dbname)
+        db_counter += 1
     app = create_app(
             TESTING=True,
-            MONGO_DATABASE_URI = TEST_DB_URI 
+            MONGO_DATABASE_URI = test_db_uri
             )
     yield app
-    pymongo.MongoClient(TEST_DB_URI).drop_database('test')
+    pymongo.MongoClient(test_db_uri).drop_database(dbname)
 
 @pytest.fixture
 def client(app):
     client = app.test_client()
     yield client
 
-@pytest.fixture
-def add_user(app):
-    from captaina.models import User
-    users_added = []
 
-    def _add_user(user_kwargs, password):
-        new_user = User(**user_kwargs)
-        new_user.set_password(password)
-        new_user.save(force_insert=True)
-        users_added.append(new_user)
-        return new_user
-    yield _add_user
-    for user in users_added:
-        user.delete()
-      
 
