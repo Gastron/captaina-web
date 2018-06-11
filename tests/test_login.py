@@ -29,3 +29,4 @@ def test_login(client):
 
     response = login(client, 'user2', 'pass')
     assert b'Invalid username' in response.data
+

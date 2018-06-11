@@ -2,13 +2,24 @@
 <html lang="en">
     <head>
         <title>{% block title %}{% endblock %}</title>
+        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
         <link rel="shortcut icon"
-						href="{{ url_for('static', filename='img/favicon.ico') }}">
+						href="{{ url_for('static', filename='img/favicon.ico') }}"/>
+        <link rel="stylesheet"
+            href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
+        <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
+        <script type="text/javascript"> {% block flashes %}
+            var flashed_messages = [{% for category, message in get_flashed_messages(with_categories=True) %}
+            ["{{ category }}", "{{ message }}"],
+            {% endfor %}]
 
+            {% endblock %}
+        </script>
     </head>
     <body>
-    {% block body %}
-					<h1>This heading is defined in the parent.</h1>
-    {% endblock %}
+        {% block body %}
+              <h1>This heading is defined in the parent.</h1>
+        {% endblock %}
+        <script src="{{ url_for('static', filename='js/messages.js') }}"></script>
     </body>
 </html>

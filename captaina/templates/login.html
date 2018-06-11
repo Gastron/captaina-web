@@ -3,7 +3,7 @@
 Login Page
 {% endblock %}
 {% block body %}
-<form action="{{ url_for('login_bp.login') }}" method="post">
+<form action="" method="post">
     <input type="text" name="username" />
     <input type="password" name="password" />
     {{ form.csrf_token }}
