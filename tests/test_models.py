@@ -24,3 +24,11 @@ def test_passwords(app):
     assert not new_user.is_correct_password("")
     with pytest.raises(ValueError):
         new_user.set_password("")
+
+def test_feedback(app):
+    from captaina.models import Feedback
+    new_feedback = Feedback()
+    assert not new_feedback.is_valid()
+    new_feedback.message = "The test suite works nicely"
+    assert new_feedback.is_valid()
+    new_feedback.save()

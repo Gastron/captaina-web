@@ -30,3 +30,6 @@ def test_login(client):
     response = login(client, 'user2', 'pass')
     assert b'Invalid username' in response.data
 
+def test_login_required(client):
+    response = client.get('/dashboard', follow_redirects=True)
+    assert b'Please log in' in response.data

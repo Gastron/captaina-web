@@ -1,5 +1,4 @@
 from flask import request, url_for, redirect, flash
-from . import login_manager
 #See:
 #https://stackoverflow.com/questions/36269485/how-do-i-pass-through-the-next-url-with-flask-and-flask-login
 def handle_needs_login():
