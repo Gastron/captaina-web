@@ -3,10 +3,13 @@
 Login Page
 {% endblock %}
 {% block body %}
+{% from "_formhelpers.html" import render_field %}
 <form action="" method="post">
-    <input type="text" name="username" />
-    <input type="password" name="password" />
+  {{ render_field(form.username) }}
+  {{ render_field(form.password) }}
+  {#<input type="text" name="username" />
+  <input type="password" name="password" />#}
     {{ form.csrf_token }}
-    <input type="submit" value=login />
+    <input type="submit" value="Log in"/>
 </form>
 {% endblock %}

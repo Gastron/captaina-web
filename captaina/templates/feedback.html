@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}
+Feedback
+{% endblock %}
+{% block body %}
+<form action="" method="post">
+  {{ form.message }}
+  {{ form.csrf_token }}
+  <br>
+  <input type="submit" value="Submit" >
+{% endblock %}

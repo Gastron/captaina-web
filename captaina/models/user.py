@@ -1,4 +1,4 @@
-from . import fbcrypt, login_manager
+from .. import fbcrypt, login_manager
 import pymodm as modm
 import pymongo as mongo
 from flask_login import UserMixin
