@@ -153,9 +153,11 @@ h2 {
 
 #alogo {
   display: block;
-  height: 150px;
+  height: 75px;
   width: auto;
   margin: auto;
+  margin-top: 25px;
+  margin-bottom: 25px;
 }
 
 .about {
