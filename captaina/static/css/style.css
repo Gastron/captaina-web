@@ -1,0 +1,305 @@
+body {
+  background-color: #6a4593; /* Aalto darkpurple */
+  margin:0;
+  padding:0;
+  height:100%;
+}
+html, button, input, select, textarea,
+.pure-g [class *= "pure-u"] {
+    /* Set your content font stack here: */
+  font-family: "Nimbus Sans Bold", Arial, Helvetica;
+}
+
+*{
+  border-sizing: border-box;
+}
+
+h1 {
+  color: #888178;
+  margin: 0;
+}
+h2 {
+  color: gray;
+  margin: 0;
+}
+
+#main {
+  height:100%;
+  padding:0;
+  margin:0;
+  position:relative;
+}
+
+.header {
+  position: absolute;
+  top: 0px;
+  height: 80px;
+  width: 100%;
+
+  text-align: center;
+}
+.header > h1,h2{
+  color: white;
+}
+
+#explain {
+  position: relative;
+  width: 100%;
+  background-color: white;
+  color: gray;
+  min-height: 80%;
+}
+#wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 80%;
+}
+
+.howto {
+  margin: auto;
+  width: 70%;
+  max-width: 600px;
+
+  padding-top: 3em;
+  padding-bottom: 3em;
+  color: #3f3f3f;
+
+}
+
+.howto > h2{
+  color: #888178; /* Aalto gray */
+  border-bottom: 1px solid #6a4593;
+}
+
+#startbutton {
+  display: block;
+  font-size: xx-large;
+  margin: auto;
+  width: 200px;
+}
+
+#readbutton {
+  position: relative;
+}
+#controlbuttons {
+  padding:1em;
+  text-align: center;
+  white-space: nowrap;
+}
+.ctrl {
+  display: inline-block;
+}
+
+.footer {
+  position: relative; 
+  width: 100%;
+  background-color: #6a4593;
+  color: #888178; /* Aalto gray */
+  max-height: 150px;
+  border-top: 1px solid #888178;
+}
+
+#promptmain {
+  z-index: 0;
+  padding-right: 5%;
+  padding-left: 5%;
+  margin: 0;
+  border: 0px;
+  position: relative;
+  padding-top: 1em;
+  -webkit-transform: translate(0,0);
+  transform: translate(0,0);
+}
+
+@media screen and (min-height: 765px) and (min-width: 740px) {
+  .footer {
+    position: absolute;
+    bottom: 0;
+    max-height: 150px;
+  }
+  #explain {
+    min-height: 100%;
+  }
+
+}
+.popup {
+  padding: 0.5em;
+  padding-left: 1em;
+  padding-right: 1em;
+  position: absolute;
+  top: 3em;
+  left: 50%;
+  -webkit-transform: translate(-50%, 0);
+  transform: translate(-50%, 0);
+}
+
+@media screen and (min-height: 500px) and (min-width: 500px) {
+  #promptmain {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 90%;
+  }
+  .popup {
+    position: absolute;
+    top: -30%;
+    left: 50%;
+    -webkit-transform: translate(-50%, 0);
+    transform: translate(-50%, 0);
+  }
+}
+
+#alogo {
+  display: block;
+  height: 150px;
+  width: auto;
+  margin: auto;
+}
+
+.about {
+  font-weight: normal;
+  padding-left: 2em;
+  padding-right: 2em;
+  padding-bottom: 1em;
+  padding-top: 1em;
+  font-size: small;
+}
+.about a{
+  color: #888178; /* Aalto gray */
+}
+
+
+
+#prompt {
+  font-size: xx-large;
+  color: white;
+  white-space: normal;
+  border-left: 5px solid transparent;
+  font-weight: bold;
+}
+
+
+input[type=textarea] {
+  font-family: "Nimbus Sans Bold", Arial, Helvetica;
+  font-weight: bold;
+  background-color: #6a4593; /* Aalto darkpurple */
+  font-size: xx-large;
+  color: white;
+  border: none;
+  outline: none;
+  width: 100%;
+}
+
+.promptspace {
+  white-space: normal;
+}
+
+.promptword.correct {
+  color: #009e69; /* Aalto darkgreen */ 
+}
+.promptword.truncated {
+  color: #e37828; /* Aalto darkorange */ 
+}
+.promptword.missed {
+  color: #dd5354; /* Aalto red */ 
+}
+.future {
+  opacity: 0.5;
+}
+.past {
+  opacity: 0.7;
+}
+.validating {
+  opacity:0.4;
+}
+
+
+.popup {
+  visibility: hidden;
+  z-index: 2;
+  border-radius: 10px;
+  background-color: white;
+  color: #888178; /* Aalto gray */
+  text-align: center;
+
+}
+.popup.show {
+  visibility: visible;
+  animation: fadeInFull 1s;
+}
+
+@keyframes fadeInFull {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+.spn {
+  color: #e37828; /* Aalto darkorange */ 
+}
+.trunc {
+  color: #e37828; /* Aalto darkorange */ 
+}
+.jump {
+  color: #e37828; /* Aalto darkorange */ 
+}
+.correct {
+  color: #009e69; /* Aalto darkgreen */ 
+}
+
+.yeah {
+  color: #009e69; /* Aalto darkgreen */ 
+}
+.boo {
+  color: #dd5354; /* Aalto red */ 
+  padding-bottom: 0.5em;
+}
+
+.hider {
+  visibility: hidden;
+  position: absolute;
+  top:0px;
+  left:0px;
+  z-index: 1;
+  background-color: black;
+  opacity: 0.3;
+  /*border-radius: 10px;*/
+  /*margin-left:30px;*/
+  margin: 0;
+  padding: 0;
+  /*width: 100vw;
+  height: 100vh;*/
+}
+.hider.show {
+  visibility: visible;
+  animation fadeIn 0.3s;
+}
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 0.3;}
+}
+
+
+hr.promptline {
+  color: gray;
+  background-color: gray;
+  border: 0;
+  height: 2px;
+}
+
+.blink {
+  background-color: gray;
+}
+
+#instruction {
+  padding-left:1em;
+  color: gray;
+}
+
+.teletype {
+  font-family: monospace;
+}
+
+html,body { height: 100%;}
+
