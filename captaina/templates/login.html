@@ -3,6 +3,7 @@
 Login Page
 {% endblock %}
 {% block body %}
+<div class="whiteboard">
 {% from "_formhelpers.html" import render_field %}
 <form action="" method="post">
   {{ render_field(form.username) }}
@@ -12,4 +13,5 @@ Login Page
     {{ form.csrf_token }}
     <input type="submit" value="Log in"/>
 </form>
+</div>
 {% endblock %}

@@ -1,34 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>{% block title %}{% endblock %}</title>
-        <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
-        <link rel="shortcut icon"
-            href="{{ url_for('static', filename='img/favicon.ico') }}"/>
-        <link rel="stylesheet"
-            href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
-        <link rel="stylesheet"
-              href="{{url_for('static', filename='css/pure.min.css') }}">
-        <link rel="stylesheet"
-              href="{{url_for('static', filename='css/grids.responsive.min.css') }}">
-        <link rel="stylesheet"
-              href="{{url_for('static', filename='css/style.css') }}">
-        <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
-        {% block flashes %}
-        <script type="text/javascript"> 
-            var flashed_messages = [{% for category, message in
-              get_flashed_messages(with_categories=True) %}
-            ["{{ category }}", "{{ message }}"],
-            {% endfor %}]
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        </script>
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}
-              <h1>This heading is defined in the parent.</h1>
-        {% endblock %}
-        {% include "footer.html" %}
-        <script src="{{ url_for('static', filename='js/messages.js') }}"></script>
-    </body>
+    <title>{% block title %}{% endblock %}</title>
+
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <link rel="shortcut icon"
+      href="{{ url_for('static', filename='img/favicon.ico') }}"/>
+    <link rel="stylesheet"
+        href="{{url_for('static', filename='css/normalize.css') }}">
+    <link rel="stylesheet"
+        href="{{url_for('static', filename='css/pure.min.css') }}">
+    <link rel="stylesheet"
+        href="{{url_for('static', filename='css/grids.responsive.min.css') }}">
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/toastr.min.css') }}"/>
+    <link rel="stylesheet"
+        href="{{url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/toastr.min.js') }}"></script>
+    {% block flashes %}
+    <script type="text/javascript"> 
+      var flashed_messages = [{% for category, message in
+        get_flashed_messages(with_categories=True) %}
+      ["{{ category }}", "{{ message }}"],
+      {% endfor %}]
+
+    </script>
+    {% endblock %}
+  </head>
+  <body>
+    {% block body %}
+        <h1>This heading is defined in the parent.</h1>
+    {% endblock %}
+    {% include "footer.html" %}
+    <script src="{{ url_for('static', filename='js/messages.js') }}"></script>
+  </body>
 </html>

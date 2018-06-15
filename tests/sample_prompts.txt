@@ -1,0 +1,2 @@
+graph_1 Puheentunnistus on suurenmoinen temppu.
+graph_2 Äyskäröinti huvittaa.

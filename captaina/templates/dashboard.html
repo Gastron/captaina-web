@@ -3,7 +3,15 @@
 Dashboard
 {% endblock %}
 {% block body %}
-Here you will select reading or getting feedback.
+<div class="whiteboard">
+  <div class="pure-g">
+    {% for lesson in lessons %}
+      <div class="pure-u-1 pure-u-md-1-2">
+        <div class="lessonblock">
+          <h1 class="title">{{ lesson.label }}</h1>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock %}
-
-

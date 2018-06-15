@@ -1,5 +1,6 @@
 body {
   background-color: #6a4593; /* Aalto darkpurple */
+  background-color: white; /* Aalto darkpurple */
   margin:0;
   padding:0;
   height:100%;
@@ -14,14 +15,14 @@ html, button, input, select, textarea,
   border-sizing: border-box;
 }
 
-h1 {
+.whiteboard > h1 {
   color: #888178;
   margin: 0;
-}
-h2 {
+} 
+.whiteboard > h2 {
   color: gray;
   margin: 0;
-}
+}*/
 
 #main {
   height:100%;
@@ -42,12 +43,15 @@ h2 {
   color: white;
 }
 
-#explain {
+.whiteboard {
   position: relative;
   width: 100%;
   background-color: white;
   color: gray;
-  min-height: 80%;
+  min-height: -webkit-calc(100% - 151px);
+  min-height: -moz-calc(100% - 151px);
+  min-height: calc(100% - 151px);
+  margin-top: 0;
 }
 #wrapper {
   position: relative;
@@ -95,7 +99,7 @@ h2 {
   width: 100%;
   background-color: #6a4593;
   color: #888178; /* Aalto gray */
-  max-height: 150px;
+  min-height: 150px;
   border-top: 1px solid #888178;
 }
 
@@ -110,18 +114,17 @@ h2 {
   -webkit-transform: translate(0,0);
   transform: translate(0,0);
 }
-
+/*
 @media screen and (min-height: 765px) and (min-width: 740px) {
   .footer {
     position: absolute;
     bottom: 0;
-    max-height: 150px;
+    min-height: 150px;
   }
-  #explain {
+  .whiteboard {
     min-height: 100%;
   }
-
-}
+}*/
 .popup {
   padding: 0.5em;
   padding-left: 1em;
@@ -151,13 +154,22 @@ h2 {
   }
 }
 
-#alogo {
+#alogowrapper {
+  height: 150px;
+  width: 150px;
   display: block;
-  height: 75px;
-  width: auto;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#alogo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   margin: auto;
-  margin-top: 25px;
-  margin-bottom: 25px;
 }
 
 .about {
@@ -303,5 +315,28 @@ hr.promptline {
   font-family: monospace;
 }
 
-html,body { height: 100%;}
+.lessonblock {
+  min-width: 200px;
+  height: 200px;
+  line-height: 200px;
+  border: solid;
+  border-color: #6a4593;
+  color: #888178; /* Aalto gray */
+  margin: 2em;
+  text-align: center;
+}
 
+.lessonblock:hover {
+  color: black;
+}
+
+
+.lessonblock .title {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: normal;
+}
+
+html,body { 
+  height: 100%;
+}

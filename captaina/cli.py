@@ -2,10 +2,14 @@ import click
 from flask.cli import AppGroup, with_appcontext
 
 user_cli = AppGroup('user')
+lesson_cli = AppGroup('lesson')
 
 def register_cli(app):
     app.cli.add_command(user_cli)
+    app.cli.add_command(lesson_cli)
 
+
+### user ###
 @user_cli.command('create')
 @click.argument('username')
 @click.argument('plaintext-password')
@@ -29,3 +33,21 @@ def change_password(username, new_plaintext_password):
         e = click.ClickException(str(err))
         e.exit_code = 1
         raise e
+
+
+### lesson ###
+@lesson_cli.command('create')
+@click.argument('name')
+@click.argument('prompts-file')
+def create_lesson(name, prompts_file):
+    from .models import Prompt, Lesson
+    with open(prompts_file) as fi:
+        lesson = Lesson()
+        lesson.label = name
+        for graph_id, *words in [line.strip().split() for line in fi]:
+            prompt = Prompt()
+            prompt.graph_id = graph_id
+            prompt.text = " ".join(words)
+            lesson.prompts.append(prompt)
+    lesson.save()
+             
