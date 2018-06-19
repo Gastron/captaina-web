@@ -53,6 +53,18 @@ html, button, input, select, textarea,
   min-height: calc(100% - 151px);
   margin-top: 0;
 }
+
+.purpleboard {
+  position: relative;
+  width: 100%;
+  background-color: #6a4593; /* Aalto darkpurple */
+  color: gray;
+  min-height: -webkit-calc(100% - 151px);
+  min-height: -moz-calc(100% - 151px);
+  min-height: calc(100% - 151px);
+  margin-top: 0;
+}
+
 #wrapper {
   position: relative;
   width: 100%;
@@ -316,6 +328,7 @@ hr.promptline {
 }
 
 .lessonblock {
+  position: relative;
   min-width: 200px;
   height: 200px;
   border-top: solid;
@@ -325,6 +338,16 @@ hr.promptline {
   margin: 2em;
   text-align: left;
 }
+
+.clickspan {
+  position:absolute; 
+  width:100%;
+  height:100%;
+  top:0;
+  left: 0;
+  z-index: 1; 
+}
+
 
 .lessonblock:hover {
   color: black;

@@ -7,8 +7,12 @@ Dashboard
   <div class="pure-g">
     {% for lesson in lessons %}
       <div class="pure-u-1 pure-u-md-1-2">
-        <div class="lessonblock">
+        <div class="lessonblock" >
           <h1 class="title">{{ lesson.label }}</h1>
+          {# This link with empty span makes the whole div a link,
+          see https://stackoverflow.com/a/3494108 #}
+          <a href="{{ url_for('lesson_bp.overview', 
+          lesson_url_id=lesson.url_id) }}"><span class="clickspan"></span></a>
         </div>
       </div>
     {% endfor %}
