@@ -10,8 +10,6 @@
     <link rel="shortcut icon"
       href="{{ url_for('static', filename='img/favicon.ico') }}"/>
     <link rel="stylesheet"
-        href="{{url_for('static', filename='css/normalize.css') }}">
-    <link rel="stylesheet"
         href="{{url_for('static', filename='css/pure.min.css') }}">
     <link rel="stylesheet"
         href="{{url_for('static', filename='css/grids.responsive.min.css') }}">
@@ -28,6 +26,8 @@
       {% endfor %}]
 
     </script>
+    {% endblock %}
+    {% block head_extra %}
     {% endblock %}
   </head>
   <body>
