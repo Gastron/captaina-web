@@ -1,3 +1,3 @@
 from .user import User, create_user, change_password
 from .feedback import Feedback
-from .lesson import Prompt, Lesson
+from .lesson import Prompt, Lesson, create_lesson_with_safe_url_id

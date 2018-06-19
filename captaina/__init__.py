@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_bcrypt import Bcrypt
 import pymodm as modm
@@ -7,12 +8,14 @@ fbcrypt = Bcrypt()
 login_manager = LoginManager()
 csrf = CSRFProtect()
 
-def create_app(**config_overrides):
-    app = Flask('captaina', instance_relative_config=True)
+def create_app():
+    instance_path = os.environ["FLASK_INSTANCE_PATH"]
+    app = Flask('captaina', 
+            instance_path=instance_path, 
+            instance_relative_config=True)
 
     app.config.from_object('config')
     app.config.from_pyfile('config.py')
-    app.config.update(config_overrides)
 
     csrf.init_app(app) 
     fbcrypt.init_app(app)
@@ -20,6 +23,7 @@ def create_app(**config_overrides):
     from .utils import handle_needs_login
     login_manager.unauthorized_handler(handle_needs_login)
     modm.connect(app.config['MONGO_DATABASE_URI'])
+    print("Connected to", app.config['MONGO_DATABASE_URI'])
     from .views import register_blueprints
     register_blueprints(app)
     from .cli import register_cli

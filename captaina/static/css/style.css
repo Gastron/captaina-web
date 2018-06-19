@@ -318,12 +318,12 @@ hr.promptline {
 .lessonblock {
   min-width: 200px;
   height: 200px;
-  line-height: 200px;
-  border: solid;
+  border-top: solid;
+  border-left: solid;
   border-color: #6a4593;
   color: #888178; /* Aalto gray */
   margin: 2em;
-  text-align: center;
+  text-align: left;
 }
 
 .lessonblock:hover {
@@ -333,8 +333,8 @@ hr.promptline {
 
 .lessonblock .title {
   display: inline-block;
-  vertical-align: middle;
-  line-height: normal;
+  margin-top: 0.5em;
+  margin-left: 0.5em;
 }
 
 html,body { 

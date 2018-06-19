@@ -9,7 +9,8 @@ class User(modm.MongoModel, UserMixin):
     _password = modm.fields.CharField(required = True)
     email = modm.fields.EmailField()
     class Meta:
-        indexes = [mongo.operations.IndexModel([('username', mongo.TEXT)], unique = True)]
+        indexes = [mongo.operations.IndexModel([('username',1)], 
+            unique = True)]
 
     def set_password(self, plaintext):
         self._password = fbcrypt.generate_password_hash(plaintext).decode('utf-8')
@@ -33,7 +34,8 @@ def create_user(username, plaintext_password):
     new_user.set_password(plaintext_password)
     try:
         new_user.save(force_insert=True)
-    except mongo.errors.DuplicateKeyError as e:
+        return new_user
+    except mongo.errors.DuplicateKeyError:
         raise ValueError("Username already exists")
 
 def change_password(username, new_plaintext_password):

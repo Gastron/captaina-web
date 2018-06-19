@@ -40,14 +40,16 @@ def change_password(username, new_plaintext_password):
 @click.argument('name')
 @click.argument('prompts-file')
 def create_lesson(name, prompts_file):
-    from .models import Prompt, Lesson
+    from .models import Prompt, Lesson, create_lesson_with_safe_url_id
     with open(prompts_file) as fi:
-        lesson = Lesson()
-        lesson.label = name
+        lesson = create_lesson_with_safe_url_id(name)
+        prompts = []
         for graph_id, *words in [line.strip().split() for line in fi]:
             prompt = Prompt()
             prompt.graph_id = graph_id
             prompt.text = " ".join(words)
-            lesson.prompts.append(prompt)
+            prompt.save()
+            prompts.append(prompt)
+        lesson.prompts = prompts
     lesson.save()
              
