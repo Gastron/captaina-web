@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}{{ lesson.label }} - {{ promptnum }}{% endblock %}
+{% block body %}
+<div class="purpleboard">
+  <div id="promptmain">
+    <div id="prompt">
+      The prompt will be displayed here.
+    </div>
+    <hr class="promptline" id="promptline">
+  </div>
+</div>
+<script> 
+{# Set the variables here: #}
+var server_url = "{{ config["SPEECH_SERVER_URL"] }}"
+var status_server_url = "{{ config["STATUS_SERVER_URL"] }}"
+var recorder_worker_url = "{{ url_for( 'static', filename="js/recorderWorker.js") }}"
+var prompt_text = "{{ prompt.text }}";
+var graph_id = "{{ prompt.graph_id }}";
+</script>
+<script src="{{ url_for('static', filename='js/dictate.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recorderWorker.js') }}"></script>
+<script src="{{ url_for('static', filename='js/speechtrack.js') }}"></script>
+{% endblock %}
+
