@@ -25,7 +25,7 @@ def prompt(lesson_url_id, promptnum):
     try:
         lesson = Lesson.objects.get({'url_id': lesson_url_id})
         prompt = lesson.prompts[prompt_index]
-    except Lesson.DoesNotExist or IndexError:
+    except (Lesson.DoesNotExist, IndexError) as e:
         abort(404)
     total_prompts = len(lesson.prompts)
     return render_template("prompt.html", 
