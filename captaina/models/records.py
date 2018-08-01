@@ -20,9 +20,9 @@ class LessonRecord(modm.MongoModel):
     audio_records = modm.fields.ListField(modm.fields.ReferenceField(AudioRecord),
             blank = True, default = list())
 
-def validate_audio_record_files(audio_record):
+def validate_audio_record_files(audio_record, audio_store_path):
     #Makes sure the audio_record's referenced files are found.
-    audio_store = pathlib.Path(current_app.config["AUDIO_STORE_PATH"])
+    audio_store = pathlib.Path(audio_store_path)
     audio_file_path = audio_store / audio_record.filekey
     align_file_path = audio_store / audio_record.alignkey
     return audio_file_path.exists() and align_file_path.exists()

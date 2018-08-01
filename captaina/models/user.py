@@ -1,8 +1,26 @@
-from .. import fbcrypt, login_manager
+import flask_bcrypt as Bcrypt
 import pymodm as modm
 import pymongo as mongo
 from flask_login import UserMixin
 import bson.json_util
+
+#Flask-Bcrypt handles tedious but important security work, so we use it for now
+#It doesn't really need flask, though!
+fbcrypt = Bcrypt()
+
+def init_flask(app, login_manager=None):
+    fbcrypt.init_app(app)
+    if login_manager is not None:
+        login_manager.user_loader(load_user)
+
+def init_from_config(config):
+    #Just set the three configs needed:
+    #BCRYPT_LOG_ROUNDS
+    #BCRYPT_HASH_PREFIX
+    #BCRYPT_HANDLE_LONG_PASSWORDS
+    fbcrypt._log_rounds = config['BCRYPT_LOG_ROUNDS']
+    fbcrypt._prefix = config['BCRYPT_HANDLE_LONG_PASSWORDS']
+    fbcrypt._handle_long_passwords = config['BCRYPT_HANDLE_LONG_PASSWORDS']
 
 class User(modm.MongoModel, UserMixin):
     username = modm.fields.CharField(required = True)
@@ -21,7 +39,6 @@ class User(modm.MongoModel, UserMixin):
     def get_id(self):
         return bson.json_util.dumps(self._id)
 
-@login_manager.user_loader
 def load_user(user_id):
     try:
         return User.objects.get({"_id": bson.json_util.loads(user_id)})
