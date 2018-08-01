@@ -1,0 +1,3 @@
+[submodule "docker-online-kaldi"]
+	path = docker-online-kaldi
+	url = git@version.aalto.fi:rouhea1/docker-online-kaldi.git
