@@ -1,4 +1,4 @@
-import flask_bcrypt as Bcrypt
+from flask_bcrypt import Bcrypt
 import pymodm as modm
 import pymongo as mongo
 from flask_login import UserMixin
@@ -8,7 +8,7 @@ import bson.json_util
 #It doesn't really need flask, though!
 fbcrypt = Bcrypt()
 
-def init_flask(app, login_manager=None):
+def init_crypt_from_flask(app, login_manager=None):
     fbcrypt.init_app(app)
     if login_manager is not None:
         login_manager.user_loader(load_user)

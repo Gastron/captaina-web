@@ -23,6 +23,8 @@ def create_app():
     from .utils import handle_needs_login
     login_manager.unauthorized_handler(handle_needs_login)
     modm.connect(app.config['MONGO_DATABASE_URI'])
+    from .models import init_crypt_from_flask
+    init_crypt_from_flask(app, login_manager)
     print("Connected to", app.config['MONGO_DATABASE_URI'])
     from .views import register_blueprints
     register_blueprints(app)
