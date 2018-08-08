@@ -12,5 +12,27 @@ services:
     volumes:
       - dbdata:/data/db
 
+  asr-master:
+    restart: always
+    build: docker-online-kaldi/apps/asr-master
+    ports:
+      - "5443:443"
+    command: ["--port=443", "--block=True"]
+
+  asr-worker:
+    restart: always
+    build: docker-online-kaldi/apps/asr-worker
+    command: ["-c","/opt/asr-conf.yaml", "-u","ws://asr-master:443/worker/ws/speech"]
+
+  graph-creator:
+    restart: always
+    build: docker-online-kaldi/apps/graph-creator
+    environment:
+      - GRAPH_DIR=/opt/s5/data/mtlm-graphs
+      - DICT_SRC=/opt/s5/data/local/dict
+      - MODEL_DIR=/opt/s5/exp/chain/all_tdnn_9_b_online
+      - SCALE_OPTS=--transition-scale 1.0 --self-loop-scale 1.0
+      - CORRECT_BOOST=10.0
+
 volumes:
   dbdata:
