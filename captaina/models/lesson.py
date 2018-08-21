@@ -2,7 +2,7 @@ import pymodm as modm
 import pymongo as mongo
 import re
 from werkzeug.utils import secure_filename
-from ..utils import mongo_serial_unique_attribute
+from .helpers import mongo_serial_unique_attribute
 
 class Prompt(modm.MongoModel):
     text = modm.fields.CharField(required = True)

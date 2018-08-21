@@ -11,18 +11,40 @@ services:
       - 27017:27017
     volumes:
       - dbdata:/data/db
+  web:
+    build:
+      context: .
+      dockerfile: environments/flask-nginx/Dockerfile
+    ports:
+      - "5000:80"
+    volumes:
+      - ./captaina:/app/captaina
+      - ./config.py:/app/config.py
+    environment:
+      - FLASK_INSTANCE_PATH=/app/instance
+      - STATIC_PATH=/app/captaina/static
+
 
   asr-master:
     restart: always
-    build: docker-online-kaldi/apps/asr-master
+    build:
+      context: .
+      dockerfile: environments/asr-master/Dockerfile
     ports:
       - "5443:443"
     command: ["--port=443", "--block=True"]
+    volumes:
+      - ./kaldi-gstreamer-server:/opt/kaldi-gstreamer-server
+      - ./captaina/models:/opt/kaldi-gstreamer-server/kaldigstserver/models
 
   asr-worker:
     restart: always
-    build: docker-online-kaldi/apps/asr-worker
+    build: 
+      context: .
+      dockerfile: environments/asr-worker/Dockerfile
     command: ["-c","/opt/asr-conf.yaml", "-u","ws://asr-master:443/worker/ws/speech"]
+    volumes:
+      - ./captaina/models:/opt/kaldi-gstreamer-server/kaldigstserver/models
 
   graph-creator:
     restart: always

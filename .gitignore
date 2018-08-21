@@ -112,6 +112,7 @@ node_modules/
 
 #misc:
 docker_quick_init.sh
+debug_instance
 
 #ctags:
 tags
