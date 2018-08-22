@@ -11,6 +11,7 @@ services:
       - 27017:27017
     volumes:
       - dbdata:/data/db
+
   web:
     build:
       context: .
@@ -23,7 +24,6 @@ services:
     environment:
       - FLASK_INSTANCE_PATH=/app/instance
       - STATIC_PATH=/app/captaina/static
-
 
   asr-master:
     restart: always
