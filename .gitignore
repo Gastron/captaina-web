@@ -113,6 +113,7 @@ node_modules/
 #misc:
 docker_quick_init.sh
 debug_instance
+docker-compose.dev.yml
 
 #ctags:
 tags
