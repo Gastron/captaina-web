@@ -1,4 +1,4 @@
-from flask import request, url_for, redirect, flash
+from flask import request, url_for, redirect, flash, abort
 
 #See:
 #https://stackoverflow.com/questions/36269485/how-do-i-pass-through-the-next-url-with-flask-and-flask-login
@@ -13,4 +13,11 @@ def redirect_dest(fallback):
     except:
         return redirect(fallback)
     return redirect(dest_url)
+
+def get_or_404(cls, query):
+    #The pattern where you get a resource but 404 for malformed input
+    try:
+        return cls.objects.get(query)
+    except cls.DoesNotExist: #Not found
+        abort(404)
 

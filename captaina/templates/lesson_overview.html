@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}{{ lesson.label }}{% endblock %}
+{% block body %}
+<div class="whiteboard">
+  <h1>{{lesson.label}}</h1>
+  <ul>
+    {% for lesson_record in lesson_records %}
+    <li> Attempt #{{ lesson_record.sequence_id }}:
+      {{ lesson_record.num_prompts_completed() }}/{{total_prompts}} completed.
+    {% endfor %}
+  </ul>
+</div>
+<script> 
+{# Set the variables here: #}
+var status_server_url = "{{ config["STATUS_SERVER_URL"] }}"
+</script>
+{% endblock %}

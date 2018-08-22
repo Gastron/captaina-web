@@ -27,7 +27,7 @@ def create_app():
     init_crypt_from_flask(app, login_manager)
     print("Connected to", app.config['MONGO_DATABASE_URI'])
     from .views import register_blueprints
-    register_blueprints(app)
+    register_blueprints(app, csrf)
     from .cli import register_cli
     register_cli(app)
     return app

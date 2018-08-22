@@ -258,6 +258,9 @@
       if (config["graph_id"]) {
         url += '&graph-id=' + config["graph_id"]
       }
+      if (config["record_cookie"]) {
+        url += '&record-cookie=' + config["record_cookie"]
+      }
 			var ws = new WebSocket(url);
 
 			ws.onmessage = function(e) {

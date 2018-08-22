@@ -58,6 +58,7 @@ var dictate = new Dictate({
   serverStatus : status_server_url,
   recorderWorkerPath : recorder_worker_url,
   graph_id : "<unknown>",
+  record_cookie : "<unknown>",
   onPartialResults : function(hypos) {
     bestHypothesis = hypos[0].transcript;
     __processHypothesis(bestHypothesis);
@@ -85,6 +86,7 @@ function setupPrompt() {
   setupPromptDiv(readingPrompt);
   setInstruction('Press and hold <span class="teletype">&lt;space&gt;</span>');
   dictate.getConfig()["graph_id"] = graph_id;
+  dictate.getConfig()["record_cookie"] = record_cookie;
 }
 setupPrompt()
 

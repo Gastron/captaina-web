@@ -1,6 +1,8 @@
-from flask import redirect, url_for, current_app, Blueprint, render_template, flash, request, abort
-from flask_login import login_required
-from ..models import Lesson, Prompt, LessonRecord, cookie_from_lesson_record
+from flask import redirect, url_for, current_app, Blueprint, render_template, flash, request
+from flask_login import login_required, current_user
+from ..models import Lesson, Prompt, LessonRecord, cookie_from_lesson_record,\
+        get_latest_lesson_record, ensure_and_get_incomplete_lesson_record
+from ..utils import get_or_404
 import pymongo as mongo
 
 lesson_bp = Blueprint('lesson_bp', __name__)
@@ -9,30 +11,49 @@ lesson_bp = Blueprint('lesson_bp', __name__)
 @lesson_bp.route('/<lesson_url_id>/overview')
 @login_required
 def overview(lesson_url_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     try:
-        lesson = Lesson.objects.get({'url_id': lesson_url_id})
-    except Lesson.DoesNotExist:
-        abort(404)
-    return redirect(url_for('lesson_bp.prompt',
-            lesson_url_id = lesson_url_id,
-            promptnum = 1))
-      
-@lesson_bp.route('/<lesson_url_id>/<int:promptnum>')
-@login_required
-def prompt(lesson_url_id, promptnum):
-    #TODO: Get the current lesson_record and continue from there.
-    if promptnum <=0:
-        abort(404)
-    prompt_index = promptnum-1
-    try:
-        lesson = Lesson.objects.get({'url_id': lesson_url_id})
-        prompt = lesson.prompts[prompt_index]
-    except (Lesson.DoesNotExist, IndexError) as e:
-        abort(404)
+        lesson_record = get_latest_lesson_record(current_user, lesson)
+    except LessonRecord.DoesNotExist:
+        return redirect(url_for('lesson_bp.start_new',
+            lesson_url_id = lesson_url_id))
+    lesson_records = LessonRecord.objects.raw({
+        'user': current_user.pk, 
+        'lesson': lesson.pk})
     total_prompts = len(lesson.prompts)
+    return render_template("lesson_overview.html",
+            lesson = lesson,
+            lesson_records = lesson_records,
+            total_prompts = total_prompts)
+            
+
+@lesson_bp.route('/<lesson_url_id>/start_new/')
+@login_required
+def start_new(lesson_url_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    ensure_and_get_incomplete_lesson_record(current_user, lesson)
+    return redirect(url_for('lesson_bp.read',
+        lesson_url_id = lesson_url_id))
+    
+
+      
+@lesson_bp.route('/<lesson_url_id>/read')
+@login_required
+def read(lesson_url_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    lesson_record = get_latest_lesson_record(current_user, lesson)
+    if lesson_record.is_complete():
+        return redirect('lesson_bp.overview',
+                lesson_url_id = lesson_url_id)
+    prompt_index = lesson_record.num_prompts_completed()
+    total_prompts = len(lesson.prompts)
+    prompt = lesson.prompts[prompt_index]
+    record_cookie = cookie_from_lesson_record(lesson_record, current_app.config["SECRET_KEY"])
+    current_app.logger.info(record_cookie)
     return render_template("prompt.html", 
             lesson = lesson, 
             prompt = prompt,
-            promptnum = promptnum,
-            total_prompts = total_prompts)
-        
+            promptnum = prompt_index + 1,
+            total_prompts = total_prompts,
+            record_cookie = record_cookie) 
+

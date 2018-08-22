@@ -35,7 +35,6 @@ services:
     command: ["--port=443", "--block=True"]
     volumes:
       - ./kaldi-gstreamer-server:/opt/kaldi-gstreamer-server
-      - ./captaina/models:/opt/kaldi-gstreamer-server/kaldigstserver/models
 
   asr-worker:
     restart: always
@@ -43,8 +42,6 @@ services:
       context: .
       dockerfile: environments/asr-worker/Dockerfile
     command: ["-c","/opt/asr-conf.yaml", "-u","ws://asr-master:443/worker/ws/speech"]
-    volumes:
-      - ./captaina/models:/opt/kaldi-gstreamer-server/kaldigstserver/models
 
   graph-creator:
     restart: always

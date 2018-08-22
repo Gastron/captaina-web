@@ -1,11 +1,14 @@
 from flask import redirect, url_for, current_app, Blueprint, render_template, flash, request
+from flask import jsonify, Response
 from ..models import LessonRecord, AudioRecord, User, Prompt, Lesson
 from ..models import validate_audio_record_files
+from ..models import lesson_record_from_cookie
 import pymongo as mongo
+import itsdangerous
 
-api_blueprint = Blueprint('api_bp', __name__)
+api_bp = Blueprint('api_bp', __name__)
 
-@api_blueprint.route('/log_audio', methods=['POST'])
+@api_bp.route('/log_audio', methods=['POST'])
 def log_audio():
     data = request.get_json()
     #Parse the data, handle missing values:
@@ -36,3 +39,15 @@ def log_audio():
     lesson_record.audio_records.append(audio_record)
     lesson_record.save()
 
+@api_bp.route('/verify-record-cookie', methods=['POST'])
+def verify_record_cookie():
+    data = request.get_json()
+    cookie = data["record-cookie"]
+    try:
+        lesson_record_from_cookie(cookie, current_app.config["SECRET_KEY"])
+        resp = "OK"
+    except LessonRecord.DoesNotExist:
+        resp = "LessonRecord not found"
+    except itsdangerous.BadData:
+        resp = "Bad cookie"
+    return Response(resp, status = 200, mimetype = "text/plain")

@@ -41,6 +41,13 @@ class LessonRecord(modm.MongoModel):
                 return False
         return True
 
+    def num_prompts_completed(self):
+        for i, prompt in enumerate(self.lesson.prompts):
+            if not any(record.prompt == prompt and record.passed_validation
+                    for record in self.audio_records):
+                return i
+        return len(self.lesson.prompts)
+
 def load_lesson_record(record_id):
     return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
 
@@ -60,17 +67,17 @@ def lesson_record_from_cookie(cookie, secret_key, max_age = 3600):
     record_id = s.loads(cookie, max_age = max_age)
     return load_lesson_record(record_id)
 
-def _get_latest_lesson_record(user, lesson):
+def get_latest_lesson_record(user, lesson):
     #raises LessonRecord.DoesNotExist if not found
     records = LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk})
     return records.order_by([('sequence_id', mongo.DESCENDING)]).first()
 
-def _ensure_and_get_latest_lesson_record(user, lesson):
+def ensure_and_get_latest_lesson_record(user, lesson):
     try:
-        return _get_latest_lesson_record(user,lesson)
+        return get_latest_lesson_record(user,lesson)
     except LessonRecord.DoesNotExist:
-        record = LessonRecord(user = user, 
-                lesson = lesson,
+        record = LessonRecord(user = user.pk, 
+                lesson = lesson.pk,
                 sequence_id = 1).save(force_insert = True)
         return record
     except mongo.errors.DuplicateKeyError: #Duplicate request
@@ -79,7 +86,7 @@ def _ensure_and_get_latest_lesson_record(user, lesson):
 def ensure_and_get_incomplete_lesson_record(user, lesson):
     #Fetches or creates an incomplete lesson record for the user, lesson combination
     #If there is a duplicate request and the record cannot be created, raises ValueError
-    old_record = _ensure_and_get_latest_lesson_record(user, lesson)
+    old_record = ensure_and_get_latest_lesson_record(user, lesson)
     if not old_record.is_complete():
         return old_record
     else:
