@@ -13,14 +13,27 @@ AUDIO_DIR = pathlib.Path(".")
 def validate(hyp, ref, max_miscues=3):
     #Make sure all reference words were found:
     if not all(word in hyp for word in ref):
-        return False
-    #When all reference words are found, the number of miscues
-    #is simply:
-    num_miscues = len(hyp) - len(ref)
+        return False, "All words were not found"
+    num_miscues = 0
+    expected_word_indices = [0]
+    for word in hyp:
+        if word == "<UNK>":
+            num_miscues +=1
+            expected_word_indices += [expected_word_indices[0] + 1]
+            continue
+        word_index = int(word.split("@")[1])
+        if  "[TRUNC:]" in word:
+            num_miscues += 1
+            expected_word_indices = [word_index, word_index + 1]
+        elif word_index not in expected_word_indices:
+            num_miscues += 1
+            expected_word_indices = [word_index + 1] + [expected_word_indices[0]]
+        else: #all good
+            expected_word_indices = [word_index + 1]
     if num_miscues > max_miscues:
-        return False
+        return False, "Too many miscues"
     #Otherwise, all good!
-    return True
+    return True, "All good"
 
 def get_ref(graph_id):
     prompt_path = GRAPH_DIR / graph_id / "uniqued_prompt.txt"
@@ -82,7 +95,7 @@ def do_post_processing(asr_output):
         id=parsed["wav_key"], 
         hyp = parsed["hyp"], 
         ref = ref))
-    validation_verdict = validate(hyp=parsed["hyp"], ref=ref)
+    validation_verdict, reason = validate(hyp=parsed["hyp"], ref=ref)
     logging.info("{id}: Validation verdict: {verdict}".format(
         id=parsed["wav_key"], 
         verdict = "Accepted" if validation_verdict else "Rejected"))
@@ -92,6 +105,7 @@ def do_post_processing(asr_output):
             wav_key = parsed["wav_key"], 
             verdict = validation_verdict)
     data["validition-result"] = validation_verdict
+    data["validation-reason"] = reason
     return json.dumps(data)
         
 def main_loop():
