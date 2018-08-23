@@ -275,9 +275,9 @@
 					if (res.status == 0) {
 						if (res.result) {
 							if (res.result.final) {
-								config.onResults(res.result.hypotheses);
+								config.onResults(res);
 							} else {
-								config.onPartialResults(res.result.hypotheses);
+								config.onPartialResults(res);
 							}
 						}
 					} else {

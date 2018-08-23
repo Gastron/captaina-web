@@ -59,14 +59,23 @@ var dictate = new Dictate({
   recorderWorkerPath : recorder_worker_url,
   graph_id : "<unknown>",
   record_cookie : "<unknown>",
-  onPartialResults : function(hypos) {
-    bestHypothesis = hypos[0].transcript;
+  onPartialResults : function(result) {
+    bestHypothesis = result.result.hypotheses[0].transcript;
     __processHypothesis(bestHypothesis);
   },
-  onResults : function(hypos) {
+  onResults : function(result) {
     setInstruction("Validating.");
-    bestHypothesis = hypos[0].transcript;
-    startValidating(bestHypothesis);
+    bestHypothesis = result.result.hypotheses[0].transcript;
+    __processHypothesis(bestHypothesis);
+    startValidating();
+    verdict = result["validation-verdict"];
+    reason = result["validation-reason"];
+    if (verdict) {
+      showAccepted();
+    }
+    else {
+      showRejected(reason);
+    }
   },
   onServerStatus : function(json) {
     if (json.num_workers_available == 0) {
@@ -99,19 +108,15 @@ function __processHypothesis(hypothesis) {
   blinkCursor();
 }
 
-function startValidating(hypothesis) {
+function startValidating() {
   validating = true;
-  parsedHypo = parseHypothesis(hypothesis);
-  colorPrompt(readingPrompt, parsedHypo);
-  blinkCursor();
   /*var hider = document.getElementById('prompthider');
   hider.classList.add("show");*/
   var HTMLList = readingPrompt.getHTMLList();
   for (index = 0; index < HTMLList.length; index++) {
     HTMLList[index].wordSpan.classList.add('validating')
   }
-  document.getElementById("readbutton").classList.add("pure-button-disabled")
-  validate(hypothesis, parsedHypo);
+  //document.getElementById("readbutton").classList.add("pure-button-disabled")
 }
 
 function validate(hypothesis, parsedHypothesis) {
@@ -181,32 +186,36 @@ function validate(hypothesis, parsedHypothesis) {
   showAccepted(formattedHypo);
 }
 
-function showRejected(reasontext, formattedHypo) {
+function getReloadButton(button_text) {
+  var button = document.createElement('button');
+  button.classList.add("pure-button");
+  button.onclick = function() { window.location.reload(true);}
+  button.innerHTML = button_text;
+  return button
+}
+
+function showRejected(reasontext) {
   var popup = document.getElementById('popup');
   popup.innerHTML = "";
   var verdict = document.createElement('div');
   verdict.innerHTML = '<h2 class="boo">Validation: reject</h2>';
   var reason = document.createElement('div');
   reason.innerHTML = reasontext;
-  var line = document.createElement('div');
-  line.innerHTML = '<hr class="promptline">';
   popup.appendChild(verdict);
   popup.appendChild(reason);
-  //popup.appendChild(line);
-  //popup.appendChild(formattedHypo);
+  button = getReloadButton("Try again");
+  popup.appendChild(button);
   popup.classList.add("show");
 }
 
-function showAccepted(formattedHypo) {
+function showAccepted() {
   var popup = document.getElementById('popup');
   popup.innerHTML = "";
   var verdict = document.createElement('div');
   verdict.innerHTML = '<h2 class="yeah">Validation: accept</h2>';
-  var line = document.createElement('div');
-  line.innerHTML = '<hr/>';
   popup.appendChild(verdict);
-  //popup.appendChild(line);
-  //popup.appendChild(formattedHypo);
+  button = getReloadButton("Next!");
+  popup.appendChild(button);
   popup.classList.add("show");
 }
 
@@ -449,16 +458,15 @@ function stopListening() {
 
 window.onload = function() {
   dictate.init();
-  btn = document.getElementById("readbutton");
-  btn.onmousedown = btn.ontouchstart = function(evt) {
-    if (!speechTracking && !validating && !writingCustom) {
-      startTracking();
-    }
-  }
-  btn.onmouseup = btn.ontouchend = function(evt) {
-    if (speechTracking && !validating && !writingCustom) {
-      stopTracking();
-    }
-  }
-  
+  //btn = document.getElementById("readbutton");
+  ///btn.onmousedown = btn.ontouchstart = function(evt) {
+  //  if (!speechTracking && !validating && !writingCustom) {
+  //    startTracking();
+  //  }
+  //}
+  //btn.onmouseup = btn.ontouchend = function(evt) {
+  //  if (speechTracking && !validating && !writingCustom) {
+  //    stopTracking();
+  //  }
+  //}
 }

@@ -104,7 +104,7 @@ def do_post_processing(asr_output):
             graph_id = parsed["graph_id"], 
             wav_key = parsed["wav_key"], 
             verdict = validation_verdict)
-    data["validition-result"] = validation_verdict
+    data["validation-verdict"] = validation_verdict
     data["validation-reason"] = reason
     return json.dumps(data)
         
