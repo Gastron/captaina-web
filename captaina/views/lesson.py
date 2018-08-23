@@ -43,8 +43,8 @@ def read(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     lesson_record = get_latest_lesson_record(current_user, lesson)
     if lesson_record.is_complete():
-        return redirect('lesson_bp.overview',
-                lesson_url_id = lesson_url_id)
+        return redirect(url_for('lesson_bp.overview',
+                lesson_url_id = lesson_url_id))
     prompt_index = lesson_record.num_prompts_completed()
     total_prompts = len(lesson.prompts)
     prompt = lesson.prompts[prompt_index]

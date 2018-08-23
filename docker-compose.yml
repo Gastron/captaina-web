@@ -39,6 +39,9 @@ services:
     build: 
       context: .
       dockerfile: environments/asr-worker/Dockerfile
+    volumes:
+      - ./validation/full_result_post_processor.py:/opt/full_result_post_processor.py
+      - ./validation/tellme-fin.yaml:/opt/asr-conf.yaml
     command: ["-c","/opt/asr-conf.yaml", "-u","ws://asr-master:443/worker/ws/speech"]
 
   graph-creator:

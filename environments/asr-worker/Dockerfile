@@ -10,9 +10,12 @@ RUN cd /opt && git clone https://github.com/Gastron/kaldi-gstreamer-server.git &
 
 ADD requirements.txt /opt/requirements.txt
 RUN apt-get update && apt-get install -y  \
-    libffi-dev && \
+    libffi-dev \
+    python3-pip \
+    python3-gi && \
     pip install --upgrade cffi && \
-    pip install -r /opt/requirements.txt
+    pip3 install --upgrade cffi && \
+    pip3 install tornado pyyaml ws4py==0.3.2
 
 
 ENV GST_PLUGIN_PATH=/opt/gst-kaldi-nnet2-online/src/:/opt/kaldi/src/gst-plugin/

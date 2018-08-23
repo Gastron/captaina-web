@@ -9,11 +9,9 @@ class AudioRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)
     prompt = modm.fields.ReferenceField(Prompt)
     filekey = modm.fields.CharField()
-    alignkey = modm.fields.CharField()
     passed_validation = modm.fields.BooleanField()
     class Meta:
-        indexes = [mongo.operations.IndexModel([('filekey',mongo.ASCENDING)], unique = True),
-            mongo.operations.IndexModel([('alignkey', mongo.ASCENDING)], unique = True)]
+        indexes = [mongo.operations.IndexModel([('filekey',mongo.ASCENDING)], unique = True)]
 
 class LessonRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)
@@ -54,8 +52,9 @@ def load_lesson_record(record_id):
 def validate_audio_record_files(audio_record, audio_store_path):
     #Makes sure the audio_record's referenced files are found.
     audio_store = pathlib.Path(audio_store_path)
-    audio_file_path = audio_store / audio_record.filekey
-    align_file_path = audio_store / audio_record.alignkey
+    id_path = audio_store / audio_record.filekey
+    audio_file_path = id_path.with_suffix(".raw")
+    align_file_path = id_path.with_suffix(".ali.json") 
     return audio_file_path.exists() and align_file_path.exists()
 
 def cookie_from_lesson_record(lesson_record, secret_key):
@@ -91,8 +90,8 @@ def ensure_and_get_incomplete_lesson_record(user, lesson):
         return old_record
     else:
         try:
-            new_record = LessonRecord(user = user, 
-                    lesson = lesson,
+            new_record = LessonRecord(user = user.pk, 
+                    lesson = lesson.pk,
                     sequence_id = old_record.sequence_id + 1).save(force_insert = True)
             return new_record
         except mongo.errors.DuplicateKeyError: #Duplicate request

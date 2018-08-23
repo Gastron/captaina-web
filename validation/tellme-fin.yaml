@@ -1,0 +1,52 @@
+use-nnet2: True
+decoder:
+    use-threaded-decoder:  false
+    model : /opt/s5/exp/chain/all_tdnn_9_b_online/final.mdl
+    frame-subsampling-factor: 3
+    word-syms : /opt/s5/data/mtlm-graphs/graph_1/words.txt
+    fst : /opt/s5/data/mtlm-graphs/graph_1/HCLG.fst
+    mfcc-config : /opt/s5/exp/chain/all_tdnn_9_b_online/conf/mfcc.conf
+    ivector-extraction-config : /opt/s5/exp/chain/all_tdnn_9_b_online/conf/ivector_extractor.conf
+    max-active: 1000
+    beam: 5.0
+    lattice-beam: 5.0
+    acoustic-scale: 1.0 
+    do-endpointing : false
+    endpoint-silence-phones : "1:2:3:4:5:6:7:8:9:10:11:12:13:14:15"
+    traceback-period-in-secs: 0.25
+    chunk-length-in-secs: 0.5
+    num-nbest: 1
+    nnet-mode: 3
+    #Additional functionality that you can play with:
+    #lm-fst:  test/models/english/tedlium_nnet_ms_sp_online/G.fst
+    #big-lm-const-arpa: test/models/english/tedlium_nnet_ms_sp_online/G.carpa
+    phone-syms: /opt/s5/data/mtlm-graphs/test/phones.txt
+    #word-boundary-file: /opt/s5/data/mtlm-graphs/test/phones/word_boundary.int
+    do-phone-alignment: true
+out-dir: /opt/s5/data/uploads
+graph-dir: /opt/s5/data/mtlm-graphs
+
+use-vad: False
+silence-timeout: 10
+
+# Just a sample post-processor that appends "." to the hypothesis
+#post-processor: perl -npe 'BEGIN {use IO::Handle; STDOUT->autoflush(1);} s/(.*)/\1./;'
+
+# A sample full post processor that add a confidence score to 1-best hyp and deletes other n-best hyps
+full-post-processor: /opt/full_result_post_processor.py /opt/s5/data/mtlm-graphs /opt/s5/data/uploads
+
+logging:
+    version : 1
+    disable_existing_loggers: False
+    formatters:
+        simpleFormater:
+            format: '%(asctime)s - %(levelname)7s: %(name)10s: %(message)s'
+            datefmt: '%Y-%m-%d %H:%M:%S'
+    handlers:
+        console:
+            class: logging.StreamHandler
+            formatter: simpleFormater
+            level: DEBUG
+    root:
+        level: DEBUG
+        handlers: [console]
