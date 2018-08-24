@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block title %}
+Lesson creator
+{% endblock %}
+{% block body %}
+<div class="whiteboard">
+{% from "_formhelpers.html" import render_field %}
+<form action="" method="post">
+  {{ render_field(form.title) }}
+  {{ render_field(form.raw_text) }}
+  {{ form.csrf_token }}
+  <br>
+  <input type="submit" value="Submit" >
+</div>
+{% endblock %}

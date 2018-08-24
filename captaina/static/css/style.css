@@ -339,6 +339,18 @@ hr.promptline {
   text-align: left;
 }
 
+.newlessonblock {
+  position: relative;
+  min-width: 200px;
+  height: 200px;
+  border-top: dashed;
+  border-left: dashed;
+  border-color: #6a4593;
+  color: #888178; /* Aalto gray */
+  margin: 2em;
+  text-align: left;
+}
+
 .clickspan {
   position:absolute; 
   width:100%;
@@ -352,9 +364,17 @@ hr.promptline {
 .lessonblock:hover {
   color: black;
 }
+.newlessonblock:hover {
+  color: black;
+}
 
 
 .lessonblock .title {
+  display: inline-block;
+  margin-top: 0.5em;
+  margin-left: 0.5em;
+}
+.newlessonblock .title {
   display: inline-block;
   margin-top: 0.5em;
   margin-left: 0.5em;

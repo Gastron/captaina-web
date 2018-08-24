@@ -5,9 +5,28 @@
   <h1>{{lesson.label}}</h1>
   <ul>
     {% for lesson_record in lesson_records %}
-    <li> Attempt #{{ lesson_record.sequence_id }}:
+      <li> Read-through #{{ lesson_record.sequence_id }}:
       {{ lesson_record.num_prompts_completed() }}/{{total_prompts}} completed.
+      {% if not lesson_record.is_complete() %}
+        <a class="pure-button" href="{{ url_for('lesson_bp.read',
+        lesson_url_id = lesson.url_id) }}">Continue</a>
+      {% endif %}
     {% endfor %}
+    </br>
+    <a class="pure-button" href="{{ url_for('dashboard_bp.dashboard') }}">
+      Back to dashboard
+    </a>
+    {% if all_done %}
+      <a class="pure-button" href="{{ url_for('lesson_bp.start_new',
+      lesson_url_id = lesson.url_id) }}">Take lesson again</a>
+    {% endif %}
+    </br>
+    {% if lesson.url_id != "the_beginning" %}
+    <a class="pure-button button-warning" href="{{ url_for('lesson_bp.delete_lesson',
+      lesson_url_id = lesson.url_id) }}">
+      Delete this lesson
+    </a>
+    {% endif %}
   </ul>
 </div>
 <script> 

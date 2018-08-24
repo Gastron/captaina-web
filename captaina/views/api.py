@@ -53,3 +53,5 @@ def verify_record_cookie():
     except itsdangerous.BadData:
         resp = "Bad cookie"
     return Response(resp, status = 200, mimetype = "text/plain")
+
+

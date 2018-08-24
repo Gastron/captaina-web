@@ -191,6 +191,7 @@ function getReloadButton(button_text) {
   button.classList.add("pure-button");
   button.onclick = function() { window.location.reload(true);}
   button.innerHTML = button_text;
+  button.focus();
   return button
 }
 

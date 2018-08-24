@@ -37,7 +37,7 @@ def mongo_serial_unique_attribute(pre_filled_instance,
     counter = 2
     while counter < max_attempts:
         try:
-            value_augmented = attr + "_" + str(counter)
+            value_augmented = value_to_try + "_" + str(counter)
             setattr(pre_filled_instance, attr, value_augmented)
             pre_filled_instance.save(force_insert=True)
             return pre_filled_instance

@@ -21,10 +21,27 @@ def overview(lesson_url_id):
         'user': current_user.pk, 
         'lesson': lesson.pk})
     total_prompts = len(lesson.prompts)
+    all_done = all(lesson_record.is_complete() for lesson_record in lesson_records)
     return render_template("lesson_overview.html",
             lesson = lesson,
             lesson_records = lesson_records,
-            total_prompts = total_prompts)
+            total_prompts = total_prompts,
+            all_done = all_done)
+
+@lesson_bp.route('/<lesson_url_id>/delete/', methods = ['GET'])
+@login_required
+def delete_lesson(lesson_url_id):
+    if lesson_url_id == 'the_beginning':
+        flash("You may not delete The Beginning", category="warning")
+        return redirect(url_for('dashboard_bp.dashboard'))
+    else:
+        lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+        lesson.delete()
+        flash("Lesson deleted", category="success")
+        return redirect(url_for('dashboard_bp.dashboard'))
+
+
+
             
 
 @lesson_bp.route('/<lesson_url_id>/start_new/')

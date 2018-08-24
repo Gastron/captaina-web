@@ -12,3 +12,9 @@ class FeedbackForm(FlaskForm):
                 wtforms.validators.Length(max=200000)],
             render_kw={"rows": 10, "cols":30})
 
+class LessonCreatorForm(FlaskForm):
+    title = StringField('Title', validators = [wtforms.validators.DataRequired()])
+    raw_text = TextAreaField('Text to read', 
+            validators=[wtforms.validators.DataRequired(),
+                wtforms.validators.Length(max=200000)],
+            render_kw={"rows": 10, "cols":30})
