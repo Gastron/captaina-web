@@ -18,7 +18,7 @@ class LessonRecord(modm.MongoModel):
     lesson = modm.fields.ReferenceField(Lesson)
     sequence_id = modm.fields.IntegerField()
     audio_records = modm.fields.ListField(modm.fields.ReferenceField(AudioRecord),
-            blank = True, default = list())
+            blank = True, default = list)
     class Meta:
         #Each record is uniquely identified by the user, lesson and sequence id combination
         indexes = [mongo.operations.IndexModel([

@@ -37,9 +37,12 @@ def log_audio():
         audio_record.save()
     except mongo.errors.DuplicateKeyError:
         abort(400) #The align or wav files are already in some record
-    lesson_record.audio_records.append(audio_record)
-    lesson_record.save()
-    return Response("OK", status = 200, mimetype = "text/plain")
+    try:
+        lesson_record.audio_records.append(audio_record)
+        lesson_record.save()
+        return Response("OK", status = 200, mimetype = "text/plain")
+    except:
+        return Response("Unknown error", status = 500, mimetype = "text/plain")
 
 @api_bp.route('/verify-record-cookie', methods=['POST'])
 def verify_record_cookie():

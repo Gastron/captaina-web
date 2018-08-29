@@ -15,7 +15,8 @@ class Prompt(modm.MongoModel):
 class Lesson(modm.MongoModel):
     label = modm.fields.CharField(required = True)
     url_id = modm.fields.CharField(required = True)
-    prompts = modm.fields.ListField(modm.fields.ReferenceField(Prompt), blank=True, default=list())
+    prompts = modm.fields.ListField(modm.fields.ReferenceField(Prompt), default = list,
+            blank = True)
     class Meta:
         indexes = [mongo.operations.IndexModel([('url_id', 1)], 
             unique = True, background = False)] 
@@ -56,7 +57,7 @@ def create_and_queue_lesson_from_form(form):
             lesson.delete()
             raise ValueError("GRAPH QUEUEING FAILED")
         lesson.prompts.append(prompt)
-    lesson.save()
+        lesson.save()
     return lesson
 
 def split_text(raw_text):

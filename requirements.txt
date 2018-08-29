@@ -18,7 +18,7 @@ more-itertools==4.2.0
 pluggy==0.6.0
 py==1.5.3
 pycparser==2.18
-pymodm==0.4.0
+pymodm==0.4.1
 pymongo==3.6.1
 pytest==3.6.1
 requests==2.19.1
