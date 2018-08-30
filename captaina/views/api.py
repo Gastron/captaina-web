@@ -24,24 +24,29 @@ def log_audio():
         passed_validation = data["passed-validation"]
     #TODO: Answer better to bad requests
     except IndexError: #Some parameter was omitted from the request
+        current_app.logger.info("Missing parameters in log-audio request")
         return Response("Parameters omitted", status = 400, mimetype = "text/plain")
     except Prompt.DoesNotExist:
-        return Response("Invalid graph_id", status = 200, mimetype = "text/plain")
+        current_app.logger.info("Invalid graph_id in log-audio request")
+        return Response("Invalid graph_id", status = 400, mimetype = "text/plain")
     #Create audio record:
     audio_record = AudioRecord(user=user, prompt=prompt, filekey=filekey,
         passed_validation=passed_validation)
     if not validate_audio_record_files(audio_record, 
             current_app.config["AUDIO_UPLOAD_PATH"]):
+        current_app.logger.info("Audio or align not found in log-audio request")
         return Response("Audio or align not found", status = 200, mimetype = "text/plain")
     try:
-        audio_record.save()
+        audio_record.save(force_insert = True)
     except mongo.errors.DuplicateKeyError:
+        current_app.logger.info("Duplicate request in log-audio")
         abort(400) #The align or wav files are already in some record
     try:
         lesson_record.audio_records.append(audio_record)
         lesson_record.save()
         return Response("OK", status = 200, mimetype = "text/plain")
     except:
+        current_app.logger.info("Duplicate request in log-audio")
         return Response("Unknown error", status = 500, mimetype = "text/plain")
 
 @api_bp.route('/verify-record-cookie', methods=['POST'])
