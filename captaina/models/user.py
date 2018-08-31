@@ -3,6 +3,7 @@ import pymodm as modm
 import pymongo as mongo
 from flask_login import UserMixin
 import bson.json_util
+from datetime import datetime
 
 #Flask-Bcrypt handles tedious but important security work, so we use it for now
 #It doesn't really need flask, though!
@@ -26,6 +27,16 @@ class User(modm.MongoModel, UserMixin):
     username = modm.fields.CharField(required = True)
     _password = modm.fields.CharField(required = True)
     email = modm.fields.EmailField()
+    role = modm.fields.CharField(required = True, 
+            choices = ['student', 'teacher'],
+            default = 'student')
+    created = modm.fields.DateTimeField(default = datetime.now)
+    modified  = modm.fields.DateTimeField(default = datetime.now)
+
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super().save(*args, **kwargs)
+
     class Meta:
         indexes = [mongo.operations.IndexModel([('username',1)], 
             unique = True)]
@@ -45,10 +56,11 @@ def load_user(user_id):
     except User.DoesNotExist:
         return None
 
-def create_user(username, plaintext_password):
+def create_user(username, plaintext_password, teacher=False):
     new_user = User()
     new_user.username = username
     new_user.set_password(plaintext_password)
+    new_user.role = 'teacher' if teacher else 'student'
     try:
         new_user.save(force_insert=True)
         return new_user
@@ -61,3 +73,4 @@ def change_password(username, new_plaintext_password):
     except User.DoesNotExist:
         raise ValueError("Username not found")
     user.set_password(new_plaintext_password)
+

@@ -4,14 +4,50 @@ import pathlib
 from . import User, Lesson, Prompt
 import itsdangerous
 import bson.json_util
+from datetime import datetime
+import json
+
 
 class AudioRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)
     prompt = modm.fields.ReferenceField(Prompt)
     filekey = modm.fields.CharField()
     passed_validation = modm.fields.BooleanField()
+    created = modm.fields.DateTimeField(default = datetime.now)
+    modified  = modm.fields.DateTimeField(default = datetime.now)
+
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super().save(*args, **kwargs)
+
     class Meta:
         indexes = [mongo.operations.IndexModel([('filekey',mongo.ASCENDING)], unique = True)]
+
+def validate_audio_record_files(audio_record, audio_store_path):
+    #Makes sure the audio_record's referenced files are found.
+    audio_store = pathlib.Path(audio_store_path)
+    id_path = audio_store / audio_record.filekey
+    audio_file_path = id_path.with_suffix(".raw")
+    align_file_path = id_path.with_suffix(".ali.json") 
+    return audio_file_path.exists() and align_file_path.exists()
+
+def choose_word_alignments(word_alignment):
+    """ Chooses the last occurences of each word in the alignment,
+    and nothing more """
+    chosen = {}
+    for word_dict in word_alignment:    
+        word = word_dict["word"]
+        if word == "<UNK>" or "[TRUNC:]" in word:
+            continue
+        word_index = int(word.split("@")[1])
+        chosen[word_index] = word_dict
+    return [chosen[index] for index in sorted(chosen.keys())]
+
+def fetch_word_alignment(audio_record, audio_store_path):
+    audio_store = pathlib.Path(audio_store_path)
+    id_path = audio_store / audio_record.filekey
+    align_file_path = id_path.with_suffix(".ali.json") 
+    return json.loads(align_file_path.read_text())
 
 class LessonRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)
@@ -19,6 +55,13 @@ class LessonRecord(modm.MongoModel):
     sequence_id = modm.fields.IntegerField()
     audio_records = modm.fields.ListField(modm.fields.ReferenceField(AudioRecord),
             blank = True, default = list)
+    created = modm.fields.DateTimeField(default = datetime.now)
+    modified  = modm.fields.DateTimeField(default = datetime.now)
+
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super().save(*args, **kwargs)
+
     class Meta:
         #Each record is uniquely identified by the user, lesson and sequence id combination
         indexes = [mongo.operations.IndexModel([
@@ -49,14 +92,6 @@ class LessonRecord(modm.MongoModel):
 def load_lesson_record(record_id):
     return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
 
-def validate_audio_record_files(audio_record, audio_store_path):
-    #Makes sure the audio_record's referenced files are found.
-    audio_store = pathlib.Path(audio_store_path)
-    id_path = audio_store / audio_record.filekey
-    audio_file_path = id_path.with_suffix(".raw")
-    align_file_path = id_path.with_suffix(".ali.json") 
-    return audio_file_path.exists() and align_file_path.exists()
-
 def cookie_from_lesson_record(lesson_record, secret_key):
     s = itsdangerous.URLSafeTimedSerializer(secret_key)
     return s.dumps(lesson_record.get_id())
@@ -69,6 +104,8 @@ def lesson_record_from_cookie(cookie, secret_key, max_age = 3600):
 def get_latest_lesson_record(user, lesson):
     #raises LessonRecord.DoesNotExist if not found
     records = LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk})
+    if not records:
+        raise LessonRecord.DoesNotExist()
     return records.order_by([('sequence_id', mongo.DESCENDING)]).first()
 
 def ensure_and_get_latest_lesson_record(user, lesson):

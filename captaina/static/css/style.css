@@ -47,7 +47,7 @@ html, button, input, select, textarea,
   position: relative;
   width: 100%;
   background-color: white;
-  color: gray;
+  color: #888178; /* Aalto gray */
   min-height: -webkit-calc(100% - 151px);
   min-height: -moz-calc(100% - 151px);
   min-height: calc(100% - 151px);
@@ -58,11 +58,30 @@ html, button, input, select, textarea,
   position: relative;
   width: 100%;
   background-color: #6a4593; /* Aalto darkpurple */
+  color: #888178; /* Aalto gray */
+  min-height: -webkit-calc(100% - 151px);
+  min-height: -moz-calc(100% - 151px);
+  min-height: calc(100% - 151px);
+  margin-top: 0;
+}
+
+.greenboard {
+  position: relative;
+  width: 100%;
+  background-color: #7cb82f; /* Aalto lightgreen */
+  background-color: #009e69; /* Aalto darkgreen */
   color: gray;
   min-height: -webkit-calc(100% - 151px);
   min-height: -moz-calc(100% - 151px);
   min-height: calc(100% - 151px);
   margin-top: 0;
+}
+
+.greenboard .lessonblock {
+  color: white;
+}
+.greenboard label {
+  color: white;
 }
 
 #wrapper {
@@ -113,6 +132,11 @@ html, button, input, select, textarea,
   color: #888178; /* Aalto gray */
   min-height: 150px;
   border-top: 1px solid #888178;
+}
+
+.teachercolor {
+  color: white;
+  background-color: #009e69; /* Aalto darkgreen */
 }
 
 #promptmain {
@@ -193,7 +217,7 @@ html, button, input, select, textarea,
   font-size: small;
 }
 .about a{
-  color: #888178; /* Aalto gray */
+  color: #d3d3d3; /* Aalto gray */
 }
 
 
@@ -334,7 +358,6 @@ hr.promptline {
   border-top: solid;
   border-left: solid;
   border-color: #6a4593;
-  color: #888178; /* Aalto gray */
   margin: 2em;
   text-align: left;
 }
@@ -346,10 +369,13 @@ hr.promptline {
   border-top: dashed;
   border-left: dashed;
   border-color: #6a4593;
-  color: #888178; /* Aalto gray */
+  color: #e37828; /* Aalto orange */
+  color: #eaa124; /* Aalto light orange */
   margin: 2em;
   text-align: left;
 }
+
+
 
 .clickspan {
   position:absolute; 

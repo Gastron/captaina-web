@@ -20,13 +20,6 @@
       <a class="pure-button" href="{{ url_for('lesson_bp.start_new',
       lesson_url_id = lesson.url_id) }}">Take lesson again</a>
     {% endif %}
-    </br>
-    {% if lesson.url_id != "the_beginning" %}
-    <a class="pure-button button-warning" href="{{ url_for('lesson_bp.delete_lesson',
-      lesson_url_id = lesson.url_id) }}">
-      Delete this lesson
-    </a>
-    {% endif %}
   </ul>
 </div>
 <script> 

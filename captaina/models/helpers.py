@@ -1,5 +1,6 @@
 import pymongo as mongo
 import pymodm as modm
+from datetime import datetime
 
 def mongo_serial_unique_attribute(pre_filled_instance, 
         attr, 
@@ -46,3 +47,12 @@ def mongo_serial_unique_attribute(pre_filled_instance,
     raise RuntimeError("""Exceeded max_attempts in serial unique attribute setting
         with attribute {attr}, 
         starting value {start_value}""".format(attr=attr, start_value=value_to_try))
+
+class TimeStampedMongoModel(modm.MongoModel):
+    created = modm.fields.DateTimeField(default = datetime.now)
+    modified  = modm.fields.DateTimeField(default = datetime.now)
+
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super().save(*args, **kwargs)
+

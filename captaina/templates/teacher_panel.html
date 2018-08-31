@@ -1,23 +1,30 @@
 {% extends "layout.html" %}
 {% block title %}
-Dashboard
+Teacher panel
 {% endblock %}
 {% block body %}
 <div class="whiteboard">
   <div class="pure-g">
     {% for lesson in lessons  %}
-      {% if lesson.is_ready() %}
       <div class="pure-u-1 pure-u-md-1-2">
         <div class="lessonblock" >
           <h1 class="title">{{ lesson.label }}</h1>
           {# This link with empty span makes the whole div a link,
           see https://stackoverflow.com/a/3494108 #}
-          <a href="{{ url_for('lesson_bp.overview', 
+          {% if not lesson.is_ready() %}
+          Not ready yet
+          {% endif %}
+          <a href="{{ url_for('teacher_bp.lesson_overview', 
           lesson_url_id=lesson.url_id) }}"><span class="clickspan"></span></a>
         </div>
       </div>
-      {% endif %}
     {% endfor %}
+    <div class="pure-u-1 pure-u-md-1-2">
+      <div class="newlessonblock" >
+        <h1 class="title">&ltCreate a new lesson&gt</h1>
+        <a href="{{ url_for('teacher_bp.create_lesson') }}"><span class="clickspan"></span></a>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
