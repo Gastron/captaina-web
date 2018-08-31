@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block title %}Review{% endblock %}
+{% block body %}
+<script src="{{ url_for('static', filename='js/howler.js') }}"></script>
+<script>
+    var sound = new Howl({
+      src: [ "{{ url_for('teacher_bp.get_wav', 
+              filekey = audio_record.filekey)}}" ],
+      sprite: {
+        {% for word in word_alignment %}
+        "{{ word[1].word }}": 
+        [{{word[1].start}}, {{word[1].start+word[1].length}}],
+        {% endfor %}
+      }
+
+    });
+</script>
+<div class="greenboard">
+  <h1> {{ audio_record.prompt.text }}</h1>
+  <ul>
+  {% for word in word_alignment %}
+  <li> <button class="pure-button" onclick="sound.play('{{ word[1].word }}')">
+    {{ word[0] }}</button>
+  {% endfor %}
+  </ul>
+  
+</div>
+<script> 
+{# Set the variables here: #}
+</script>
+{% endblock %}

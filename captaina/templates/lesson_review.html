@@ -4,10 +4,15 @@
 <div class="whiteboard">
   <h1>{{lesson.label}}</h1>
   <ul>
-    {% for lesson_record in records %}
+    {% for lesson_record, cookie in records %}
     <li> <ul>
         <li> User: {{ lesson_record.user.username }}
         <li> Completed: {{ lesson_record.modified }}
+          <a class="pure-button" 
+            href="{{ url_for('teacher_bp.review_lesson_record',
+            lesson_url_id = lesson.url_id,
+            record_cookie = cookie) }}">
+            Review</a>
       </ul>
     {% endfor %}
   </ul>

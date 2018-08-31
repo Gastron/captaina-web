@@ -47,7 +47,7 @@ def fetch_word_alignment(audio_record, audio_store_path):
     audio_store = pathlib.Path(audio_store_path)
     id_path = audio_store / audio_record.filekey
     align_file_path = id_path.with_suffix(".ali.json") 
-    return json.loads(align_file_path.read_text())
+    return json.loads(align_file_path.read_text())["word-alignment"]
 
 class LessonRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)
@@ -88,6 +88,10 @@ class LessonRecord(modm.MongoModel):
                     for record in self.audio_records):
                 return i
         return len(self.lesson.prompts)
+    
+    def validated_audio_records(self):
+        return [record for record in self.audio_records if record.passed_validation]
+
 
 def load_lesson_record(record_id):
     return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
@@ -104,7 +108,7 @@ def lesson_record_from_cookie(cookie, secret_key, max_age = 3600):
 def get_latest_lesson_record(user, lesson):
     #raises LessonRecord.DoesNotExist if not found
     records = LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk})
-    if not records:
+    if records.count() == 0:
         raise LessonRecord.DoesNotExist()
     return records.order_by([('sequence_id', mongo.DESCENDING)]).first()
 
