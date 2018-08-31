@@ -13,10 +13,11 @@ def register_cli(app):
 @user_cli.command('create')
 @click.argument('username')
 @click.argument('plaintext-password')
-def create_user(username, plaintext_password):
+@click.option('--teacher', is_flag=True)
+def create_user(username, plaintext_password, teacher):
     from .models import create_user
     try:
-        create_user(username, plaintext_password)
+        create_user(username, plaintext_password, teacher)
     except ValueError as err:
         e = click.ClickException(str(err))
         e.exit_code = 1

@@ -73,7 +73,10 @@ def parse(asr_output):
     graph_id = data["graph-id"]
     record_cookie = data["record-cookie"]
     wav_key = data["id"]
-    alignment = data["result"]["hypotheses"][0]["phone-alignment"]
+    phone_alignment = data["result"]["hypotheses"][0]["phone-alignment"]
+    word_alignment = data["result"]["hypotheses"][0]["word-alignment"]
+    alignment = {"phone-alignment": phone_alignment,
+            "word-alignment": word_alignment}
     return {"hyp": best_hyp, 
             "graph_id": graph_id, 
             "record_cookie": record_cookie, 

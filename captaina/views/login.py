@@ -15,7 +15,10 @@ def login():
             if user.is_correct_password(form.password.data):
                 login_user(user)
                 flash('You were logged in', category='success')
-                return redirect_dest(fallback = url_for('dashboard_bp.dashboard'))
+                if user.role == 'teacher':
+                    return redirect_dest(fallback = url_for('teacher_bp.overview'))
+                else:
+                    return redirect_dest(fallback = url_for('dashboard_bp.dashboard'))
             else:
                 flash('Invalid password', category='error')
         except User.DoesNotExist:

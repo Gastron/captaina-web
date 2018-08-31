@@ -21,7 +21,7 @@ decoder:
     #lm-fst:  test/models/english/tedlium_nnet_ms_sp_online/G.fst
     #big-lm-const-arpa: test/models/english/tedlium_nnet_ms_sp_online/G.carpa
     phone-syms: /opt/s5/data/mtlm-graphs/test/phones.txt
-    #word-boundary-file: /opt/s5/data/mtlm-graphs/test/phones/word_boundary.int
+    word-boundary-file: /opt/s5/data/mtlm-graphs/test/phones/word_boundary.int
     do-phone-alignment: true
 out-dir: /opt/s5/data/uploads
 graph-dir: /opt/s5/data/mtlm-graphs

@@ -1,10 +1,23 @@
+{% if current_user.role == 'teacher' %}
+<div class="footer pure-g teachercolor">
+{% else %}
 <div class="footer pure-g">
+{% endif %}
   <div class="pure-u-1 pure-u-sm-2-3">
     <p class="about"> 
-    This application was created by Aku Rouhe and the <a href="http://spa.aalto.fi/en/research/research_groups/speech_recognition/">Speech Recogniton research group</a> 
-    in collaboration with the <a href="https://onlinelearning.aalto.fi/">Online Learning Project</a> 
-    in Aalto University, 2018. 
-    <br>
+    {% if current_user.is_authenticated %}
+      Logged in as {{ current_user.username }}. 
+      <a href="{{ url_for('login_bp.logout') }}">Log out</a>.
+      <br>
+      {% if current_user.role == 'teacher' %}
+        You are seeing the teacher interface
+      {% endif %}
+    {% else %}
+      Logged out. 
+      <a href="{{ url_for('login_bp.login') }}">Log in</a>.
+      <br>
+    {% endif %}
+    <br> 
     <br> 
     We enjoy reading your bug reports and feedback 
     <a href="{{ url_for('feedback_bp.feedback') }}">sent here.</a>

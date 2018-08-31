@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField
+from wtforms import StringField, PasswordField, TextAreaField, FieldList
 import wtforms
 
 class UsernamePasswordForm(FlaskForm):
@@ -18,3 +18,5 @@ class LessonCreatorForm(FlaskForm):
             validators=[wtforms.validators.DataRequired(),
                 wtforms.validators.Length(max=200000)],
             render_kw={"rows": 10, "cols":30})
+
+

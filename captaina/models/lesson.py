@@ -4,12 +4,19 @@ import re
 import requests
 from werkzeug.utils import secure_filename
 from .helpers import mongo_serial_unique_attribute
+from datetime import datetime
 
 class Prompt(modm.MongoModel):
     text = modm.fields.CharField(required = True)
     graph_id = modm.fields.CharField(required = True)
+    created = modm.fields.DateTimeField(default = datetime.now)
+    modified  = modm.fields.DateTimeField(default = datetime.now)
+
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super().save(*args, **kwargs)
+
     class Meta:
-        final = True
         indexes = [mongo.operations.IndexModel([('graph_id', 1)], unique = True)] 
 
 class Lesson(modm.MongoModel):
@@ -17,6 +24,13 @@ class Lesson(modm.MongoModel):
     url_id = modm.fields.CharField(required = True)
     prompts = modm.fields.ListField(modm.fields.ReferenceField(Prompt), default = list,
             blank = True)
+    created = modm.fields.DateTimeField(default = datetime.now)
+    modified  = modm.fields.DateTimeField(default = datetime.now)
+
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super().save(*args, **kwargs)
+
     class Meta:
         indexes = [mongo.operations.IndexModel([('url_id', 1)], 
             unique = True, background = False)] 
