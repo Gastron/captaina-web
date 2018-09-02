@@ -8,4 +8,3 @@ from .records import LessonRecord, AudioRecord, validate_audio_record_files, \
         ensure_and_get_incomplete_lesson_record, choose_word_alignments, fetch_word_alignment
 from .review import AudioReview
 
-

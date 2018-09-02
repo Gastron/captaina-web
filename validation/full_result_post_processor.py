@@ -54,6 +54,13 @@ def convert_to_wav(file_key):
     subprocess.check_call(["sox", "-e", "signed", "-t", "raw", "-L", "-b", "16", "-r", "16000", 
         str(raw_path), "-t", "wav", str(wav_path)], shell = False)
 
+def convert_to_ogg(file_key):
+    base_path = AUDIO_DIR / file_key
+    raw_path = base_path.with_suffix(".raw")
+    wav_path = base_path.with_suffix(".ogg")
+    subprocess.check_call(["sox", "-e", "signed", "-t", "raw", "-L", "-b", "16", "-r", "16000", 
+        str(raw_path), "-t", "ogg", str(wav_path)], shell = False)
+
 def post_result_to_backend(record_cookie, graph_id, file_key, verdict):
     data = json.dumps({"record-cookie": record_cookie, 
         "graph-id": graph_id,
@@ -111,7 +118,7 @@ def do_post_processing(asr_output):
         id=parsed["file_key"], 
         verdict = "Accepted" if validation_verdict else "Rejected"))
     save_alignment(parsed["file_key"], parsed["alignment"])
-    convert_to_wav(parsed["file_key"])
+    convert_to_ogg(parsed["file_key"])
     post_result_to_backend(record_cookie = parsed["record_cookie"], 
             graph_id = parsed["graph_id"], 
             file_key = parsed["file_key"], 

@@ -110,7 +110,10 @@ def get_latest_lesson_record(user, lesson):
     records = LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk})
     if records.count() == 0:
         raise LessonRecord.DoesNotExist()
-    return records.order_by([('sequence_id', mongo.DESCENDING)]).first()
+    result = records.order_by([('sequence_id', mongo.DESCENDING)]).first()
+    if result is None:
+        raise LessonRecord.DoesNotExist()
+    return result
 
 def ensure_and_get_latest_lesson_record(user, lesson):
     try:
@@ -118,7 +121,8 @@ def ensure_and_get_latest_lesson_record(user, lesson):
     except LessonRecord.DoesNotExist:
         record = LessonRecord(user = user.pk, 
                 lesson = lesson.pk,
-                sequence_id = 1).save(force_insert = True)
+                sequence_id = 1)
+        record.save(force_insert = True)
         return record
     except mongo.errors.DuplicateKeyError: #Duplicate request
         raise ValueError("Duplicate request")
@@ -133,7 +137,8 @@ def ensure_and_get_incomplete_lesson_record(user, lesson):
         try:
             new_record = LessonRecord(user = user.pk, 
                     lesson = lesson.pk,
-                    sequence_id = old_record.sequence_id + 1).save(force_insert = True)
+                    sequence_id = old_record.sequence_id + 1)
+            new_record.save(force_insert = True) 
             return new_record
         except mongo.errors.DuplicateKeyError: #Duplicate request
             raise ValueError("Duplicate request")

@@ -4,15 +4,14 @@
 <script src="{{ url_for('static', filename='js/howler.js') }}"></script>
 <script>
     var sound = new Howl({
-      src: [ "{{ url_for('teacher_bp.get_wav', 
+      src: [ "{{ url_for('teacher_bp.get_ogg', 
               filekey = audio_record.filekey)}}" ],
       sprite: {
         {% for word in word_alignment %}
         "{{ word[1].word }}": 
-        [{{word[1].start}}, {{word[1].start+word[1].length}}],
+        [{{word[1].start}}, {{word[1].length}}],
         {% endfor %}
       }
-
     });
 </script>
 <div class="greenboard">
@@ -23,7 +22,8 @@
     {{ word[0] }}</button>
   {% endfor %}
   </ul>
-  
+  <button>
+
 </div>
 <script> 
 {# Set the variables here: #}

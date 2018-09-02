@@ -65,7 +65,8 @@ def review_lesson_record(lesson_url_id, record_cookie):
         word_aligns = fetch_word_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
         chosen_aligns = choose_word_alignments(word_aligns)
         millis = aligns_to_millis(chosen_aligns)
-        matched = match_words_and_aligns(audio_record, millis) 
+        padded = pad_aligns(millis)
+        matched = match_words_and_aligns(audio_record, padded)
         return render_template("review.html", 
                 audio_record = audio_record, 
                 word_alignment = matched)
@@ -89,6 +90,17 @@ def aligns_to_millis(aligns):
         "start": int(1000*align["start"]),
         "length": int(1000*align["length"])} for align in aligns]
 
+def pad_aligns(aligns, front_pad=20, end_pad=20):
+    """ Add padding milliseconds of padding to aligns. Assumed aligns already in millis. """
+    result = aligns[:]
+    for align in result:
+        align["start"] = align["start"]-front_pad
+        if align["start"] < 0:
+            align["start"] = 0
+        align["length"] += end_pad
+    return result
+
+
 def match_words_and_aligns(audio_record, aligns):
     words = audio_record.prompt.text.split()
     if not len(words) == len(aligns):
@@ -100,3 +112,9 @@ def match_words_and_aligns(audio_record, aligns):
 def get_wav(filekey):
     return send_from_directory(current_app.config["AUDIO_UPLOAD_PATH"],
             filekey + ".wav")
+
+@teacher_bp.route('get-ogg/<filekey>.ogg')
+@login_required
+def get_ogg(filekey):
+    return send_from_directory(current_app.config["AUDIO_UPLOAD_PATH"],
+            filekey + ".ogg")

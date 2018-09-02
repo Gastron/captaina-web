@@ -19,4 +19,6 @@ class LessonCreatorForm(FlaskForm):
                 wtforms.validators.Length(max=200000)],
             render_kw={"rows": 10, "cols":30})
 
+class ReviewForm(FlaskForm):
+    reviews = ListField()
 

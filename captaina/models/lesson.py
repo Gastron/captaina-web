@@ -67,7 +67,7 @@ def create_and_queue_lesson_from_form(form):
         response = requests.post("http://graph-creator:5000/create-graph", 
                 json={'key': prompt.graph_id,
                     'prompt': sentence})
-        if response.status_code not in (200, 201):
+        if response.json()["graph_status"] != "queued":
             lesson.delete()
             raise ValueError("GRAPH QUEUEING FAILED")
         lesson.prompts.append(prompt)
