@@ -15,6 +15,33 @@
     });
 </script>
 <div class="greenboard">
+
+  <h1> {{ audio_record.prompt.text }}</h1>
+  <form action="" method="post">
+    <ul>
+    {% for word in word_alignment %}
+    <li> <button class="pure-button" onclick="sound.play('{{ word[1].word }}')" type=button>
+      {{ word[0] }}</button>
+      <fieldset>
+        <label for="na">Cannot rate</label>
+        <input type="radio" name="{{ word[1].word }}" value="na" id="na"></br>
+        <label for="1">1</label>
+        <input type="radio" name="{{ word[1].word }}" value="1" id="1"></br>
+        <label for="2">2</label>
+        <input type="radio" name="{{ word[1].word }}" value="2" id="2"></br>
+        <label for="3">3</label>
+        <input type="radio" name="{{ word[1].word }}" value="3" id="3"></br>
+        <label for="4">4</label>
+        <input type="radio" name="{{ word[1].word }}" value="4" id="4"></br>
+        <label for="5">5</label>
+        <input type="radio" name="{{ word[1].word }}" value="5" id="5"></br>
+      </fieldset>
+      {% endfor %}
+    </ul>
+    {{ form.csrf_token }}
+    <input type="submit" value=""/>
+  </form>
+{# 
   <h1> {{ audio_record.prompt.text }}</h1>
   <ul>
   {% for word in word_alignment %}
@@ -23,6 +50,7 @@
   {% endfor %}
   </ul>
   <button>
+ #}
 
 </div>
 <script> 

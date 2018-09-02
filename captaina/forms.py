@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, FieldList
+from wtforms import StringField, PasswordField, TextAreaField, FieldList, HiddenField, SelectField, FormField, RadioField
 import wtforms
 
 class UsernamePasswordForm(FlaskForm):
@@ -19,6 +19,5 @@ class LessonCreatorForm(FlaskForm):
                 wtforms.validators.Length(max=200000)],
             render_kw={"rows": 10, "cols":30})
 
-class ReviewForm(FlaskForm):
-    reviews = ListField()
-
+class EmptyForm(FlaskForm):
+    pass

@@ -4,7 +4,7 @@ from flask_login import login_required, current_user
 from ..models import Lesson, Prompt, LessonRecord, AudioReview, \
         cookie_from_lesson_record, lesson_record_from_cookie, \
         create_and_queue_lesson_from_form, fetch_word_alignment, choose_word_alignments
-from ..forms import LessonCreatorForm
+from ..forms import LessonCreatorForm, EmptyForm
 from ..utils import get_or_404, teacher_only
 import pymongo as mongo
 
@@ -61,19 +61,32 @@ def delete_lesson(lesson_url_id):
 def review_lesson_record(lesson_url_id, record_cookie):
     lesson_record = lesson_record_from_cookie(record_cookie, current_app.config["SECRET_KEY"])
     audio_record = next_audio_record_to_review(lesson_record, current_user)
-    if audio_record is not None:
-        word_aligns = fetch_word_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
-        chosen_aligns = choose_word_alignments(word_aligns)
-        millis = aligns_to_millis(chosen_aligns)
-        padded = pad_aligns(millis)
-        matched = match_words_and_aligns(audio_record, padded)
-        return render_template("review.html", 
-                audio_record = audio_record, 
-                word_alignment = matched)
-    else:
-        flash("All reviews completed", category="success")
+    if request.method == 'GET' and audio_record is None:
+        flash("Review completed", category="success")
         return redirect(url_for('teacher_bp.lesson_overview',
             lesson_url_id = lesson_url_id))
+    word_aligns = fetch_word_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
+    chosen_aligns = choose_word_alignments(word_aligns)
+    millis = aligns_to_millis(chosen_aligns)
+    padded = pad_aligns(millis)
+    matched = match_words_and_aligns(audio_record, padded)
+    form = EmptyForm() #For CSRF token
+    if request.method == 'POST' and form.validate_on_submit():
+        print(request.form)
+        audio_review = AudioReview(reviewer = current_user.pk,
+            audio_record = audio_record.pk,
+            review = r)
+        audio_review.save()
+        flash("Ratings saved", category="success")
+        return redirect(url_for('teacher_bp.review_lesson_record',
+            lesson_url_id = lesson_url_id,
+            record_cookie = record_cookie))
+    else:
+        return render_template("review.html", 
+                form = form,
+                audio_record = audio_record,
+                word_alignment = matched)
+
 
 def next_audio_record_to_review(lesson_record, user):
     for audio_record in lesson_record.validated_audio_records():
@@ -105,7 +118,7 @@ def match_words_and_aligns(audio_record, aligns):
     words = audio_record.prompt.text.split()
     if not len(words) == len(aligns):
         raise ValueError("Prompt and align do not match!")
-    return list(zip(words, aligns))
+    return list(zip(words, aligns, range(len(words))))
 
 @teacher_bp.route('get-wav/<filekey>.wav')
 @login_required
