@@ -40,6 +40,9 @@ def lesson_overview(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     records = LessonRecord.objects.raw({'lesson': lesson.pk}).order_by([('modified', mongo.DESCENDING)])
     filtered = filter(lambda record: record.is_complete(), records)
+    filtered = filter(lambda record: record.user.username == current_user.assignee, records)
+    filtered = filter(lambda record: 
+            next_audio_record_to_review(record, current_user) is not None, filtered)
     record_cookies = map(lambda r: cookie_from_lesson_record(r, current_app.config["SECRET_KEY"]),
             records)
     return render_template('lesson_review.html', 
@@ -72,10 +75,11 @@ def review_lesson_record(lesson_url_id, record_cookie):
     matched = match_words_and_aligns(audio_record, padded)
     form = EmptyForm() #For CSRF token
     if request.method == 'POST' and form.validate_on_submit():
-        print(request.form)
+        review = dict(request.form)
+        review.pop("csrf_token")
         audio_review = AudioReview(reviewer = current_user.pk,
             audio_record = audio_record.pk,
-            review = r)
+            review = review)
         audio_review.save()
         flash("Ratings saved", category="success")
         return redirect(url_for('teacher_bp.review_lesson_record',
