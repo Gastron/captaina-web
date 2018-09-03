@@ -4,10 +4,14 @@ Feedback
 {% endblock %}
 {% block body %}
 <div class="whiteboard">
-<form action="" method="post">
-  {{ form.message }}
-  {{ form.csrf_token }}
-  <br>
-  <input type="submit" value="Submit" >
+  <div class="midarea">
+    <form action="" method="post">
+      {{ form.message }}
+      {{ form.csrf_token }}
+      </br>
+      </br>
+      <input type="submit" value="Submit feedback" class="pure-button">
+    </form>
+  </div>
 </div>
 {% endblock %}

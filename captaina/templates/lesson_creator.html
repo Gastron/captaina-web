@@ -3,13 +3,16 @@
 Lesson creator
 {% endblock %}
 {% block body %}
-<div class="greenboard">
-{% from "_formhelpers.html" import render_field %}
-<form action="" method="post">
-  {{ render_field(form.title) }}
-  {{ render_field(form.raw_text) }}
-  {{ form.csrf_token }}
-  <br>
-  <input type="submit" value="Submit" >
+<div class="whiteboard">
+  <div class="midarea">
+  {% from "_formhelpers.html" import render_field %}
+  <form action="" method="post">
+    {{ render_field(form.title) }}
+    {{ render_field(form.raw_text) }}
+    {{ form.csrf_token }}
+    <br>
+    <input type="submit" value="Create lesson" class="pure-button">
+  </form>
+  </div>
 </div>
 {% endblock %}

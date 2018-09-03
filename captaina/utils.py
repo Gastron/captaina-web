@@ -36,3 +36,4 @@ def role_restriction(func, role):
     return decorated_view
 teacher_only = lambda func: role_restriction(func, "teacher")
 student_only = lambda func: role_restriction(func, "student")
+    
