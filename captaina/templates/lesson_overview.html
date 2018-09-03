@@ -15,9 +15,9 @@
         <a class="pure-button" href="{{ url_for('lesson_bp.read',
         lesson_url_id = lesson.url_id) }}">Continue</a>
       {% endif %}
-      {% if  %}
-        <a class="pure-button" href="{{ url_for('lesson_bp.read',
-        lesson_url_id = lesson.url_id) }}">Continue</a>
+      {% if lesson_record.reviews_exist() %}
+        <a class="pure-button" href="{{ url_for('lesson_bp.browse_reviews',
+        record_cookie = lesson_record.record_cookie, prompt_num=1) }}">See review</a>
       {% endif %}
       </div>
     </div>

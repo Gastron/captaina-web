@@ -1,7 +1,8 @@
 import pymodm as modm
 import pymongo as mongo
 from datetime import datetime
-from . import AudioRecord, User
+from .records import AudioRecord
+from .user import User
 
 class AudioReview(modm.MongoModel):
     reviewer = modm.fields.ReferenceField(User)
@@ -13,4 +14,7 @@ class AudioReview(modm.MongoModel):
     def save(self, *args, **kwargs):
         self.modified = datetime.now()
         super().save(*args, **kwargs)
+
+    def get_rating(self, word_id):
+        return self.review.get(word_id, ["na"])[0] #Deal with wierd list encapsulation
 

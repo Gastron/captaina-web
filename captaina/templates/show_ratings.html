@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+{% block title %}See review{% endblock %}
+{% block body %}
+<script src="{{ url_for('static', filename='js/howler.js') }}"></script>
+<script>
+    var sound = new Howl({
+      src: [ "{{ url_for('teacher_bp.get_ogg', 
+              filekey = audio_record.filekey)}}" ],
+      sprite: {
+        {% for word in word_list %}
+        "{{ word["word_id"] }}": 
+        [{{ word["start"] }}, {{ word["length"] }}],
+        {% endfor %}
+      }
+    });
+</script>
+<div class="purpleboard">
+
+  <div class="listarea">
+  <h1> {{ audio_record.prompt.text }}</h1>
+
+  {% for word in word_list %}
+    <fieldset>
+      <legend class="reviewword">{{ word["as_written"] }}</legend>
+      <button class="pure-button" onclick="sound.play('{{ word["word_id"] }}')" type=button>
+       Play </button>
+      <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+      Score: {{ word["score"] }}
+    </fieldset> 
+    {% endfor %}
+  {% if next_num != None %}
+    <a class="pure-button widebtn vspace"
+       href="{{ url_for("lesson_bp.browse_reviews",
+        record_cookie = record_cookie,
+        prompt_num = next_num) }}">Next prompt</a>
+  {% else %}
+   <a class="pure-button widebtn vspace"
+       href="{{ url_for("lesson_bp.overview",
+        lesson_url_id = lesson_url_id) }}">Back to dashboard</a>
+  {% endif %}
+  </div>
+ </div>
+{% endblock %}

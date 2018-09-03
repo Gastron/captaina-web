@@ -5,7 +5,7 @@ from ..models import Lesson, Prompt, LessonRecord, AudioReview, \
         cookie_from_lesson_record, lesson_record_from_cookie, \
         create_and_queue_lesson_from_form, fetch_word_alignment, choose_word_alignments
 from ..forms import LessonCreatorForm, EmptyForm
-from ..utils import get_or_404, teacher_only
+from ..utils import get_or_404, teacher_only, match_words_and_aligns, pad_aligns, aligns_to_millis
 import pymongo as mongo
 
 teacher_bp = Blueprint('teacher_bp', __name__)
@@ -100,29 +100,6 @@ def next_audio_record_to_review(lesson_record, user):
         except AudioReview.DoesNotExist:
             return audio_record
     return None
-
-def aligns_to_millis(aligns):
-    return [{
-        "word": align["word"], 
-        "start": int(1000*align["start"]),
-        "length": int(1000*align["length"])} for align in aligns]
-
-def pad_aligns(aligns, front_pad=20, end_pad=20):
-    """ Add padding milliseconds of padding to aligns. Assumed aligns already in millis. """
-    result = aligns[:]
-    for align in result:
-        align["start"] = align["start"]-front_pad
-        if align["start"] < 0:
-            align["start"] = 0
-        align["length"] += end_pad
-    return result
-
-
-def match_words_and_aligns(audio_record, aligns):
-    words = audio_record.prompt.text.split()
-    if not len(words) == len(aligns):
-        raise ValueError("Prompt and align do not match!")
-    return list(zip(words, aligns, range(len(words))))
 
 @teacher_bp.route('get-wav/<filekey>.wav')
 @login_required

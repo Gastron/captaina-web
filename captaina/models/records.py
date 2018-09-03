@@ -1,7 +1,8 @@
 import pymodm as modm
 import pymongo as mongo
 import pathlib
-from . import User, Lesson, Prompt
+from .user import User
+from .lesson import Lesson, Prompt
 import itsdangerous
 import bson.json_util
 from datetime import datetime
@@ -92,6 +93,17 @@ class LessonRecord(modm.MongoModel):
     def validated_audio_records(self):
         return [record for record in self.audio_records if record.passed_validation]
 
+    def reviews_exist(self):
+        from .review import AudioReview
+        validated_records = self.validated_audio_records()
+        if not validated_records:
+            return False
+        for audio_record in validated_records:
+            try:
+                AudioReview.objects.get({"audio_record": audio_record.pk})
+            except AudioReview.DoesNotExist:
+                return False
+        return True
 
 def load_lesson_record(record_id):
     return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})

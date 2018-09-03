@@ -28,6 +28,10 @@ html, button, input, select, textarea,
   color: white;
   margin: 0;
 }
+.purpleboard > h1 {
+  color: white;
+  margin: 0;
+}
 
 .listy {
   min-width: 400px;
@@ -72,6 +76,7 @@ html, button, input, select, textarea,
   width: 100%;
   background-color: #6a4593; /* Aalto darkpurple */
   color: #888178; /* Aalto gray */
+  color: white; /* Aalto gray */
   min-height: -webkit-calc(100% - 151px);
   min-height: -moz-calc(100% - 151px);
   min-height: calc(100% - 151px);
