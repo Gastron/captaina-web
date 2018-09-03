@@ -6,12 +6,12 @@
     <h1>{{lesson.label}}</h1>
 
   {% for lesson_record, cookie in records %}
-    <div class="listy greenblock pure-g">
-      <div class="pure-u-1-8">
+    <div class="listy greenblock">
+      <div class="listyleft">
         User: {{ lesson_record.user.username }} </br>
         Completed: {{ lesson_record.modified | datetimefmt }}
       </div>
-      <div class="pure-u-7-8">
+      <div class="listyright">
         <a class="pure-button" 
           href="{{ url_for('teacher_bp.review_lesson_record',
           lesson_url_id = lesson.url_id,
@@ -21,10 +21,10 @@
     </div>
   {% endfor %}
   </br>
-  <a class="pure-button widebtn" href="{{ url_for('teacher_bp.overview') }}">
+  <a class="pure-button widebtn vspace" href="{{ url_for('teacher_bp.overview') }}">
     Back to overview 
   </a>
-  <a class="pure-button widebtn" href="{{ url_for('teacher_bp.delete_lesson',
+  <a class="pure-button widebtn vspace" href="{{ url_for('teacher_bp.delete_lesson',
     lesson_url_id = lesson.url_id) }}">
     Delete this lesson
   </a>

@@ -38,6 +38,17 @@ html, button, input, select, textarea,
   margin: 0.25em;
   padding: 0.25em;
   border-left: solid;
+  vertical-align: center;
+}
+
+.listyleft {
+  display: inline-block;
+  min-width: 150px;
+  padding-right: 1em;
+}
+.listyright {
+  display: inline-block;
+  margin: auto;
 }
 
 #main {
@@ -453,7 +464,7 @@ hr.promptline {
 }
 
 widebtn {
-  width: 100px;
+  width: 125px;
 }
 
 input[type="radio"] {
