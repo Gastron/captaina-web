@@ -1,4 +1,5 @@
-from flask import request, url_for, redirect, flash, abort, current_app
+from flask import request, url_for, redirect, flash, abort, current_app, Flask
+from werkzeug import DispatcherMiddleware
 from flask_login import current_user
 from functools import wraps
 
@@ -79,3 +80,8 @@ def match_aligns_words_and_reviews(matched_aligns, reviews):
             "length": align["length"]})
     return matched
 
+def prefix_application_path(app, prefix):
+    """ Add a prefix to all URLs. Need this typically for serving the whole application
+    under a proxy """
+    app.wsgi_app = DispatcherMiddleware(Flask('dummy_app'), #for 404,
+        {prefix: app.wsgi_app})
