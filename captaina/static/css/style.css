@@ -20,9 +20,36 @@ html, button, input, select, textarea,
   margin: 0;
 } 
 .whiteboard > h2 {
-  color: gray;
+  color: #888178;
   margin: 0;
-}*/
+}
+
+.greenboard > h1 {
+  color: white;
+  margin: 0;
+}
+.purpleboard > h1 {
+  color: white;
+  margin: 0;
+}
+
+.listy {
+  min-width: 400px;
+  margin: 0.25em;
+  padding: 0.25em;
+  border-left: solid;
+  vertical-align: center;
+}
+
+.listyleft {
+  display: inline-block;
+  min-width: 150px;
+  padding-right: 1em;
+}
+.listyright {
+  display: inline-block;
+  margin: auto;
+}
 
 #main {
   height:100%;
@@ -47,6 +74,7 @@ html, button, input, select, textarea,
   position: relative;
   width: 100%;
   background-color: white;
+  border-color: #6a4593;
   color: #888178; /* Aalto gray */
   min-height: -webkit-calc(100% - 151px);
   min-height: -moz-calc(100% - 151px);
@@ -59,6 +87,7 @@ html, button, input, select, textarea,
   width: 100%;
   background-color: #6a4593; /* Aalto darkpurple */
   color: #888178; /* Aalto gray */
+  color: white; /* Aalto gray */
   min-height: -webkit-calc(100% - 151px);
   min-height: -moz-calc(100% - 151px);
   min-height: calc(100% - 151px);
@@ -70,15 +99,17 @@ html, button, input, select, textarea,
   width: 100%;
   background-color: #7cb82f; /* Aalto lightgreen */
   background-color: #009e69; /* Aalto darkgreen */
-  color: gray;
+  color: white;
   min-height: -webkit-calc(100% - 151px);
   min-height: -moz-calc(100% - 151px);
   min-height: calc(100% - 151px);
   margin-top: 0;
 }
 
-.greenboard .lessonblock {
+
+.green {
   color: white;
+  background-color: #009e69; /* Aalto darkgreen */
 }
 .greenboard label {
   color: white;
@@ -369,13 +400,10 @@ hr.promptline {
   border-top: dashed;
   border-left: dashed;
   border-color: #6a4593;
-  color: #e37828; /* Aalto orange */
   color: #eaa124; /* Aalto light orange */
   margin: 2em;
   text-align: left;
 }
-
-
 
 .clickspan {
   position:absolute; 
@@ -386,14 +414,12 @@ hr.promptline {
   z-index: 1; 
 }
 
-
 .lessonblock:hover {
   color: black;
 }
 .newlessonblock:hover {
   color: black;
 }
-
 
 .lessonblock .title {
   display: inline-block;
@@ -404,6 +430,46 @@ hr.promptline {
   display: inline-block;
   margin-top: 0.5em;
   margin-left: 0.5em;
+}
+.greenblock {
+  border-color: #009e69; /* Aalto darkgreen */
+}
+
+.hspace {
+  margin-left: 0.5em;
+}
+.vspace {
+  margin-top: 0.5em;
+}
+
+.reviewword {
+  color: white;
+  font-weight: bold;
+}
+
+.listarea {
+	padding-top: 10%;
+  padding-right: 10%;
+  padding-left: 10%;
+}
+
+.midareawrap {
+  position: relative;
+}
+.midarea {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+widebtn {
+  width: 125px;
+}
+
+input[type="radio"] {
+  margin-top: -1px;
+  vertical-align: middle;
 }
 
 html,body { 

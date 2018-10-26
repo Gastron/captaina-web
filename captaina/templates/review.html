@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block title %}Review{% endblock %}
+{% block body %}
+<script src="{{ url_for('static', filename='js/howler.js') }}"></script>
+<script>
+    var sound = new Howl({
+      src: [ "{{ url_for('teacher_bp.get_ogg', 
+              filekey = audio_record.filekey)}}" ],
+      sprite: {
+        {% for word in word_alignment %}
+        "{{ word[1].word }}": 
+        [{{word[1].start}}, {{word[1].length}}],
+        {% endfor %}
+      }
+    });
+</script>
+<div class="greenboard">
+
+  <div class="listarea">
+  <h1> {{ audio_record.prompt.text }}</h1>
+
+  <form action="" method="post" class="vspace">
+    {% for word in word_alignment %}
+      <fieldset>
+        <legend class="reviewword">{{ word[0] }}</legend>
+        <button class="pure-button" onclick="sound.play('{{ word[1].word }}')" type=button>
+         Play </button>
+        <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+        <input type="radio" name="{{ word[1].word }}" value="na" id="na">
+        <label for="na">Cannot rate</label>
+        <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+        <input type="radio" name="{{ word[1].word }}" value="1" id="1">
+        <label for="1">1</label><span class="hspace">&nbsp;</span>
+        <input type="radio" name="{{ word[1].word }}" value="2" id="2">
+        <label for="2">2</label><span class="hspace">&nbsp;</span>
+        <input type="radio" name="{{ word[1].word }}" value="3" id="3">
+        <label for="3">3</label><span class="hspace">&nbsp;</span>
+        <input type="radio" name="{{ word[1].word }}" value="4" id="4">
+        <label for="4">4</label><span class="hspace">&nbsp;</span>
+        <input type="radio" name="{{ word[1].word }}" value="5" id="5">
+        <label for="5">5</label>
+      </fieldset> 
+      {% endfor %}
+    {{ form.csrf_token }}
+    <input type="submit" value="Submit" class="vspace pure-button"/>
+  </form>
+  </div>
+</div>
+{% endblock %}

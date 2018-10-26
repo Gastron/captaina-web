@@ -4,14 +4,17 @@ Login Page
 {% endblock %}
 {% block body %}
 <div class="whiteboard">
-{% from "_formhelpers.html" import render_field %}
-<form action="" method="post">
-  {{ render_field(form.username) }}
-  {{ render_field(form.password) }}
-  {#<input type="text" name="username" />
-  <input type="password" name="password" />#}
+  <div class="midarea">
+  {% from "_formhelpers.html" import render_field %}
+  <form action="" method="post">
+    {{ render_field(form.username) }}
+    {{ render_field(form.password) }}
+    {#<input type="text" name="username" />
+    <input type="password" name="password" />#}
     {{ form.csrf_token }}
-    <input type="submit" value="Log in"/>
-</form>
+    </br>
+    <input type="submit" value="Log in" class="pure-button">
+  </form>
+  </div>
 </div>
 {% endblock %}

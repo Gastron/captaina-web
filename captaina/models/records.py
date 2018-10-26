@@ -1,7 +1,8 @@
 import pymodm as modm
 import pymongo as mongo
 import pathlib
-from . import User, Lesson, Prompt
+from .user import User
+from .lesson import Lesson, Prompt
 import itsdangerous
 import bson.json_util
 from datetime import datetime
@@ -47,7 +48,7 @@ def fetch_word_alignment(audio_record, audio_store_path):
     audio_store = pathlib.Path(audio_store_path)
     id_path = audio_store / audio_record.filekey
     align_file_path = id_path.with_suffix(".ali.json") 
-    return json.loads(align_file_path.read_text())
+    return json.loads(align_file_path.read_text())["word-alignment"]
 
 class LessonRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)
@@ -88,6 +89,21 @@ class LessonRecord(modm.MongoModel):
                     for record in self.audio_records):
                 return i
         return len(self.lesson.prompts)
+    
+    def validated_audio_records(self):
+        return [record for record in self.audio_records if record.passed_validation]
+
+    def reviews_exist(self):
+        from .review import AudioReview
+        validated_records = self.validated_audio_records()
+        if not validated_records:
+            return False
+        for audio_record in validated_records:
+            try:
+                AudioReview.objects.get({"audio_record": audio_record.pk})
+            except AudioReview.DoesNotExist:
+                return False
+        return True
 
 def load_lesson_record(record_id):
     return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
@@ -104,9 +120,12 @@ def lesson_record_from_cookie(cookie, secret_key, max_age = 3600):
 def get_latest_lesson_record(user, lesson):
     #raises LessonRecord.DoesNotExist if not found
     records = LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk})
-    if not records:
+    if records.count() == 0:
         raise LessonRecord.DoesNotExist()
-    return records.order_by([('sequence_id', mongo.DESCENDING)]).first()
+    result = records.order_by([('sequence_id', mongo.DESCENDING)]).first()
+    if result is None:
+        raise LessonRecord.DoesNotExist()
+    return result
 
 def ensure_and_get_latest_lesson_record(user, lesson):
     try:
@@ -114,7 +133,8 @@ def ensure_and_get_latest_lesson_record(user, lesson):
     except LessonRecord.DoesNotExist:
         record = LessonRecord(user = user.pk, 
                 lesson = lesson.pk,
-                sequence_id = 1).save(force_insert = True)
+                sequence_id = 1)
+        record.save(force_insert = True)
         return record
     except mongo.errors.DuplicateKeyError: #Duplicate request
         raise ValueError("Duplicate request")
@@ -129,7 +149,8 @@ def ensure_and_get_incomplete_lesson_record(user, lesson):
         try:
             new_record = LessonRecord(user = user.pk, 
                     lesson = lesson.pk,
-                    sequence_id = old_record.sequence_id + 1).save(force_insert = True)
+                    sequence_id = old_record.sequence_id + 1)
+            new_record.save(force_insert = True) 
             return new_record
         except mongo.errors.DuplicateKeyError: #Duplicate request
             raise ValueError("Duplicate request")

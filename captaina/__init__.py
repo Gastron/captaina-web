@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 import pymodm as modm
 from flask_login import LoginManager
 from flask_wtf import CSRFProtect
+from .jinja_filters import register_jinja_filters
 fbcrypt = Bcrypt()
 login_manager = LoginManager()
 csrf = CSRFProtect()
@@ -20,7 +21,7 @@ def create_app():
     csrf.init_app(app) 
     fbcrypt.init_app(app)
     login_manager.init_app(app)
-    from .utils import handle_needs_login
+    from .utils import handle_needs_login, prefix_application_path
     login_manager.unauthorized_handler(handle_needs_login)
     modm.connect(app.config['MONGO_DATABASE_URI'])
     from .models import init_crypt_from_flask
@@ -30,5 +31,7 @@ def create_app():
     register_blueprints(app, csrf)
     from .cli import register_cli
     register_cli(app)
+    register_jinja_filters(app)
+    prefix_application_path(app, "/captaina")
     return app
 

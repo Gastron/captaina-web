@@ -30,6 +30,7 @@ class User(modm.MongoModel, UserMixin):
     role = modm.fields.CharField(required = True, 
             choices = ['student', 'teacher'],
             default = 'student')
+    assignee = modm.fields.CharField()
     created = modm.fields.DateTimeField(default = datetime.now)
     modified  = modm.fields.DateTimeField(default = datetime.now)
 
