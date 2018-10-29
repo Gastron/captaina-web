@@ -9,4 +9,4 @@ dashboard_bp = Blueprint('dashboard_bp', __name__)
 @login_required
 @student_only
 def dashboard():
-    return render_template('dashboard.html', lessons=Lesson.objects.all())
+    return render_template('dashboard.html', lessons=Lesson.objects.raw({"is_public":True}))

@@ -15,6 +15,8 @@ lesson_bp = Blueprint('lesson_bp', __name__)
 @student_only
 def overview(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    if not lesson.is_public:
+        abort(403)
     try:
         lesson_record = get_latest_lesson_record(current_user, lesson)
     except LessonRecord.DoesNotExist:

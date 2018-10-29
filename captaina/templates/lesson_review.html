@@ -4,6 +4,12 @@
 <div class="whiteboard">
   <div class="listarea">
     <h1>{{lesson.label}}</h1>
+    
+    <ul class="minimallist">
+    {% for prompt in lesson.prompts %}
+      <li> {{ prompt.text }}</li>
+    {% endfor %}
+    </ul>
 
   {% for lesson_record, cookie in records %}
     <div class="listy greenblock">
@@ -21,13 +27,22 @@
     </div>
   {% endfor %}
   </br>
-  <a class="pure-button widebtn vspace" href="{{ url_for('teacher_bp.overview') }}">
+  <a class="pure-button vspace" href="{{ url_for('teacher_bp.overview') }}">
     Back to overview 
   </a>
-  <a class="pure-button widebtn vspace" href="{{ url_for('teacher_bp.delete_lesson',
-    lesson_url_id = lesson.url_id) }}">
-    Delete this lesson
-  </a>
+  {% if lesson.is_public %}
+    <form action="{{ url_for('teacher_bp.unpublish_lesson',
+      lesson_url_id = lesson.url_id) }}" method="post" class="inline-form vspace">
+          <input type="submit" class="pure-button vspace" name="unpublish" value="Unpublish" />
+          <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
+    </form>
+  {% else %}
+    <form action="{{ url_for('teacher_bp.publish_lesson',
+      lesson_url_id = lesson.url_id) }}" method="post" class="inline-form">
+          <input type="submit" class="pure-button vspace" name="publish" value="Publish" />
+          <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
+    </form>
+  {% endif %}
   </div>
 </div>
 <script> 

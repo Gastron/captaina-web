@@ -26,6 +26,7 @@ class Lesson(modm.MongoModel):
             blank = True)
     created = modm.fields.DateTimeField(default = datetime.now)
     modified  = modm.fields.DateTimeField(default = datetime.now)
+    is_public = modm.fields.BooleanField(default = False)
 
     def save(self, *args, **kwargs):
         self.modified = datetime.now()
@@ -43,7 +44,6 @@ class Lesson(modm.MongoModel):
                 print(prompt.graph_id)
                 return False
         return True
-
 
 def create_lesson_with_safe_url_id(label):
     lesson = Lesson()

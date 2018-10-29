@@ -463,9 +463,18 @@ hr.promptline {
   transform: translate(-50%, -50%);
 }
 
-widebtn {
+.widebtn {
   width: 125px;
 }
+
+.inline-form {
+  display: inline!important;
+}
+.minimallist {
+  list-style-type: decimal;
+}
+
+
 
 input[type="radio"] {
   margin-top: -1px;

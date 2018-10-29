@@ -40,7 +40,6 @@ def lesson_overview(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     records = LessonRecord.objects.raw({'lesson': lesson.pk}).order_by([('modified', mongo.DESCENDING)])
     filtered = filter(lambda record: record.is_complete(), records)
-    filtered = filter(lambda record: record.user.username == current_user.assignee, records)
     filtered = filter(lambda record: 
             next_audio_record_to_review(record, current_user) is not None, filtered)
     record_cookies = map(lambda r: cookie_from_lesson_record(r, current_app.config["SECRET_KEY"]),
@@ -49,14 +48,27 @@ def lesson_overview(lesson_url_id):
             lesson = lesson, 
             records = zip(filtered, record_cookies))
 
-@teacher_bp.route('/lesson/<lesson_url_id>/delete/', methods = ['GET'])
+@teacher_bp.route('/lesson/<lesson_url_id>/publish', methods = ['POST'])
 @login_required
 @teacher_only
-def delete_lesson(lesson_url_id):
+def publish_lesson(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
-    lesson.delete()
-    flash("Lesson deleted", category="success")
-    return redirect(url_for('teacher_bp.overview'))
+    lesson.is_public = True
+    lesson.save()
+    flash("Lesson published", category = "success")
+    return redirect(url_for('teacher_bp.lesson_overview',
+        lesson_url_id = lesson_url_id))
+
+@teacher_bp.route('/lesson/<lesson_url_id>/unpublish', methods = ['POST'])
+@login_required
+@teacher_only
+def unpublish_lesson(lesson_url_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    lesson.is_public = False
+    lesson.save()
+    flash("Lesson unpublished", category = "success")
+    return redirect(url_for('teacher_bp.lesson_overview',
+        lesson_url_id = lesson_url_id))
 
 @teacher_bp.route('/lesson/<lesson_url_id>/review/<record_cookie>/next', methods = ['GET', 'POST'])
 @login_required
