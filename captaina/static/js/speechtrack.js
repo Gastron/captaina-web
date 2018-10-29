@@ -339,10 +339,8 @@ function parseHypothesis(hypothesis) {
 }
 
 function setInstruction(text) {
-  //Disabled for now:
-  return;
-  //instruction = document.getElementById('instruction');
-  //instruction.innerHTML = text;
+  instruction = document.getElementById('instruction');
+  instruction.innerHTML = text;
 }
 
 function startTracking() {
@@ -357,7 +355,7 @@ function startTracking() {
     speechTracking = true;
     __processHypothesis(""); 
     colorAtStart(readingPrompt);
-    setInstruction("Read the prompt aloud. The speech recogniser tries track you and shows where it predicts you are.")
+    setInstruction("Read the prompt aloud.")
   } catch (e) {
     console.log("Unable to start speech tracking due to error: " +e);
     speechTracking = false;
