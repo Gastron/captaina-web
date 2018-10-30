@@ -2,7 +2,7 @@ from flask import redirect, url_for, current_app, Blueprint, render_template, fl
 from flask import jsonify, Response
 from ..models import LessonRecord, AudioRecord, User, Prompt, Lesson
 from ..models import validate_audio_record_files
-from ..models import lesson_record_from_cookie
+from ..models import record_from_cookie
 import pymongo as mongo
 import itsdangerous
 
@@ -14,10 +14,10 @@ def log_audio():
     #Parse the data, handle missing values:
     try:
         record_cookie = data["record-cookie"]
-        lesson_record = lesson_record_from_cookie(record_cookie, 
+        record = record_from_cookie(record_cookie, 
                 current_app.config["SECRET_KEY"])
-        user = lesson_record.user
-        lesson = lesson_record.lesson
+        user = record.user
+        lesson = record.lesson
         graph_id = data["graph-id"]
         prompt = Prompt.objects.get({"graph_id": graph_id})
         filekey = data["file-key"]
@@ -42,11 +42,11 @@ def log_audio():
         current_app.logger.info("Duplicate request in log-audio")
         abort(400) #The align or wav files are already in some record
     try:
-        lesson_record.audio_records.append(audio_record)
-        lesson_record.save()
+        record.audio_records.append(audio_record)
+        record.save()
         return Response("OK", status = 200, mimetype = "text/plain")
     except:
-        current_app.logger.info("Duplicate request in log-audio")
+        current_app.logger.info("Error in log-audio")
         return Response("Unknown error", status = 500, mimetype = "text/plain")
 
 @api_bp.route('/verify-record-cookie', methods=['POST'])
@@ -54,10 +54,10 @@ def verify_record_cookie():
     data = request.get_json()
     cookie = data["record-cookie"]
     try:
-        lesson_record_from_cookie(cookie, current_app.config["SECRET_KEY"])
+        record_from_cookie(cookie, current_app.config["SECRET_KEY"])
         resp = "OK"
-    except LessonRecord.DoesNotExist:
-        resp = "LessonRecord not found"
+    except ValueError:
+        resp = "Record not found"
     except itsdangerous.BadData:
         resp = "Bad cookie"
     return Response(resp, status = 200, mimetype = "text/plain")

@@ -34,21 +34,22 @@ html, button, input, select, textarea,
 }
 
 .listy {
-  min-width: 400px;
+  display: table;
   margin: 0.25em;
   padding: 0.25em;
   border-left: solid;
-  vertical-align: center;
+  width: 90%;
 }
 
 .listyleft {
-  display: inline-block;
-  min-width: 150px;
-  padding-right: 1em;
+  display: table-cell;
+  vertical-align: middle;
+  min-width: 130px;
+  /*padding-right: 1em;*/
 }
 .listyright {
-  display: inline-block;
-  margin: auto;
+  display: table-cell;
+  vertical-align: middle;
 }
 
 #main {
@@ -66,7 +67,11 @@ html, button, input, select, textarea,
 
   text-align: center;
 }
-.header > h1,h2{
+
+.header > h1{
+  color: white;
+}
+.header > h2{
   color: white;
 }
 
@@ -337,6 +342,12 @@ input[type=textarea] {
   padding-bottom: 0.5em;
 }
 
+.bigtext {
+  font-weight: bold;
+  font-size: x-large;
+  margin-right: 2em;
+}
+
 .hider {
   visibility: hidden;
   position: absolute;
@@ -375,7 +386,7 @@ hr.promptline {
 
 #instruction {
   padding-left:1em;
-  color: #888178; /* Aalto gray */
+  color: #A0A0A0; /* grayish */
 }
 
 .teletype {

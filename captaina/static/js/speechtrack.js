@@ -194,6 +194,14 @@ function getReloadButton(button_text) {
   button.focus();
   return button
 }
+function getNextButton(button_text) {
+  var button = document.createElement('a');
+  button.href = next_page;
+  button.classList.add("pure-button");
+  button.innerHTML = button_text;
+  button.focus();
+  return button
+}
 
 function showRejected(reasontext) {
   var popup = document.getElementById('popup');
@@ -215,7 +223,11 @@ function showAccepted() {
   var verdict = document.createElement('div');
   verdict.innerHTML = '<h2 class="yeah">Validation: accept</h2>';
   popup.appendChild(verdict);
-  button = getReloadButton("Next!");
+  if (reference_record) {
+    button = getNextButton("Review");
+  } else {
+    button = getReloadButton("Next!");
+  }
   popup.appendChild(button);
   popup.classList.add("show");
 }

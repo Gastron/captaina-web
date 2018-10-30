@@ -3,7 +3,8 @@ from flask import redirect, url_for, current_app, Blueprint, render_template, fl
 from flask_login import login_required, current_user
 from ..models import Lesson, Prompt, LessonRecord, AudioReview, \
         cookie_from_lesson_record, lesson_record_from_cookie, \
-        create_and_queue_lesson_from_form, fetch_word_alignment, choose_word_alignments
+        create_and_queue_lesson_from_form, fetch_word_alignment, choose_word_alignments, \
+        cookie_from_record, record_from_cookie, get_or_make_reference_record
 from ..forms import LessonCreatorForm, EmptyForm
 from ..utils import get_or_404, teacher_only, match_words_and_aligns, pad_aligns, aligns_to_millis
 import pymongo as mongo
@@ -46,7 +47,55 @@ def lesson_overview(lesson_url_id):
             records)
     return render_template('lesson_review.html', 
             lesson = lesson, 
-            records = zip(filtered, record_cookies))
+            records = zip(filtered, record_cookies),
+            reference_record = get_or_make_reference_record(current_user, lesson))
+
+@teacher_bp.route('/lesson/<lesson_url_id>/<graph_id>/read')
+@login_required
+@teacher_only
+def read(lesson_url_id, graph_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    record = get_or_make_reference_record(current_user, lesson)
+    try:
+        #Find the prompt in the lesson (verify input) 
+        prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
+            if prompt.graph_id == graph_id][0] #[0] to pick the first; there should only be one
+    except IndexError:
+        abort(404)
+    record_cookie = cookie_from_record(record, current_app.config["SECRET_KEY"])
+    return render_template("prompt.html", 
+            lesson = lesson, 
+            prompt = prompt,
+            promptnum = prompt_index + 1,
+            total_prompts = len(lesson.prompts),
+            record_cookie = record_cookie,
+            reference_record = True) 
+
+@teacher_bp.route('/lesson/<lesson_url_id>/<graph_id>/reference')
+@login_required
+@teacher_only
+def review_reference(lesson_url_id, graph_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    record = get_or_make_reference_record(current_user, lesson)
+    try:
+        #Find the prompt in the lesson (verify input) 
+        prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
+            if prompt.graph_id == graph_id][0] #[0] to pick the first; there should only be one
+    except IndexError:
+        abort(404)
+    audio_record = record.get_reference(prompt)
+    if audio_record is None:
+        abort(404)
+    word_aligns = fetch_word_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
+    chosen_aligns = choose_word_alignments(word_aligns)
+    millis = aligns_to_millis(chosen_aligns)
+    padded = pad_aligns(millis)
+    matched_aligns = match_words_and_aligns(audio_record, padded)
+    return render_template("review_reference.html",
+            lesson = lesson,
+            prompt = prompt,
+            word_alignment = matched_aligns,
+            audio_record = audio_record)
 
 @teacher_bp.route('/lesson/<lesson_url_id>/publish', methods = ['POST'])
 @login_required

@@ -44,7 +44,6 @@ def attach_cookies(lesson_records):
 
 @lesson_bp.route('/<lesson_url_id>/start_new/')
 @login_required
-@student_only
 def start_new(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     ensure_and_get_incomplete_lesson_record(current_user, lesson)
@@ -58,6 +57,9 @@ def read(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     lesson_record = get_latest_lesson_record(current_user, lesson)
     if lesson_record.is_complete():
+        if current_user.role == 'teacher':
+            return redirect(url_for('teacher_bp.lesson_overview',
+                    lesson_url_id = lesson_url_id))
         return redirect(url_for('lesson_bp.overview',
                 lesson_url_id = lesson_url_id))
     prompt_index = lesson_record.num_prompts_completed()
@@ -70,7 +72,8 @@ def read(lesson_url_id):
             prompt = prompt,
             promptnum = prompt_index + 1,
             total_prompts = total_prompts,
-            record_cookie = record_cookie) 
+            record_cookie = record_cookie,
+            reference_record = False) #We are not making a reference recording
 
 @lesson_bp.route('/<record_cookie>/<int:prompt_num>')
 @login_required
@@ -100,6 +103,6 @@ def browse_reviews(record_cookie, prompt_num):
             record_cookie = record_cookie,
             audio_record = audio_record,
             word_list = matched_aligns_and_scores,
-            next_num = prompt_num+1if prompt_num < lesson_record.num_prompts_completed() else None)
+            next_num = prompt_num+1 if prompt_num < lesson_record.num_prompts_completed() else None)
 
             

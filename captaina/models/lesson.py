@@ -36,14 +36,16 @@ class Lesson(modm.MongoModel):
         indexes = [mongo.operations.IndexModel([('url_id', 1)], 
             unique = True, background = False)] 
 
-    def is_ready(self):
+    def graphs_ready(self):
         graphs_request = requests.get("http://graph-creator:5000/list-graphs")
         graphs = graphs_request.json()
         for prompt in self.prompts:
             if prompt.graph_id not in graphs:
-                print(prompt.graph_id)
                 return False
         return True
+
+    def is_ready(self):
+        return self.graphs_ready()
 
 def create_lesson_with_safe_url_id(label):
     lesson = Lesson()

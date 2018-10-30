@@ -1,6 +1,10 @@
 {% extends "layout.html" %}
 {% block title %}{{ lesson.label }} - {{ promptnum }}{% endblock %}
 {% block body %}
+{#{% if reference_record %}
+<div class="greenboard">
+{% endif %}
+  {% else %} #}
 <div class="purpleboard">
   <div id="promptmain">
     <div id="popup" class="popup"></div>
@@ -21,6 +25,12 @@ var recorder_worker_url = "{{ url_for( 'static', filename="js/recorderWorker.js"
 var prompt_text = "{{ prompt.text }}";
 var graph_id = "{{ prompt.graph_id }}";
 var record_cookie = "{{ record_cookie }}";
+var reference_record = {{ "true" if reference_record else "false" }};
+var next_page = {% if reference_record %}"{{ url_for('teacher_bp.review_reference', 
+    lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}"
+    {% else %}"reload"
+    {% endif %}
+
 </script>
 <script src="{{ url_for('static', filename='js/dictate.js') }}"></script>
 <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>

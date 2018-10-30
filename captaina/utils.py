@@ -44,7 +44,7 @@ def aligns_to_millis(aligns):
         "start": int(1000*align["start"]),
         "length": int(1000*align["length"])} for align in aligns]
 
-def pad_aligns(aligns, front_pad=20, end_pad=20):
+def pad_aligns(aligns, front_pad=10, end_pad=10):
     """ Add padding milliseconds of padding to aligns. Assumed aligns already in millis. """
     result = aligns[:]
     for align in result:
@@ -79,6 +79,7 @@ def match_aligns_words_and_reviews(matched_aligns, reviews):
             "start": align["start"],
             "length": align["length"]})
     return matched
+
 
 def prefix_application_path(app, prefix):
     """ Add a prefix to all URLs. Need this typically for serving the whole application

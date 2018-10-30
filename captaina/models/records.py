@@ -105,14 +105,82 @@ class LessonRecord(modm.MongoModel):
                 return False
         return True
 
-def load_lesson_record(record_id):
-    return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
+class ReferenceRecord(modm.MongoModel):
+    user = modm.fields.ReferenceField(User)
+    lesson = modm.fields.ReferenceField(Lesson)
+    audio_records = modm.fields.ListField(modm.fields.ReferenceField(AudioRecord),
+            blank = True, default = list)
+    created = modm.fields.DateTimeField(default = datetime.now)
+    modified  = modm.fields.DateTimeField(default = datetime.now)
 
+    def save(self, *args, **kwargs):
+        self.modified = datetime.now()
+        super().save(*args, **kwargs)
+
+    def get_id(self):
+        return bson.json_util.dumps(self._id)
+
+    def get_reference(self, prompt):
+        possible_references = [record for record in self.audio_records if
+                record.passed_validation and record.prompt == prompt]
+        if not possible_references:
+            return None
+        else:
+            #Current decision: return the latest one
+            return possible_references[-1]
+
+    def reference_exists(self, prompt):
+        if any(record for record in self.audio_records if
+                record.passed_validation and record.prompt == prompt):
+            return True
+        else:
+            return False
+
+    class Meta:
+        #Only one reference per lesson, per user
+        indexes = [mongo.operations.IndexModel([
+            ('user', mongo.ASCENDING),
+            ('lesson', mongo.ASCENDING)], unique = True)] 
+
+def get_or_make_reference_record(user, lesson):
+    try:
+        return ReferenceRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk}).first()
+    except ReferenceRecord.DoesNotExist:
+        record = ReferenceRecord(user = user.pk, 
+                lesson = lesson.pk)
+        record.save(force_insert = True)
+        return record
+    except mongo.errors.DuplicateKeyError: #Duplicate request
+        raise ValueError("Duplicate request")
+
+def load_record(record_id):
+    try:
+        return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
+    except LessonRecord.DoesNotExist:
+        try:
+            return ReferenceRecord.objects.get({"_id": bson.json_util.loads(record_id)})
+        except ReferenceRecord.DoesNotExist:
+            raise ValueError("Record does not exist")
+
+def cookie_from_record(record, secret_key):
+    s = itsdangerous.URLSafeTimedSerializer(secret_key)
+    return s.dumps(record.get_id())
+
+def record_from_cookie(cookie, secret_key, max_age = 3600): 
+    # Raises ValueError if not found
+    s = itsdangerous.URLSafeTimedSerializer(secret_key)
+    record_id = s.loads(cookie, max_age = max_age)
+    return load_record(record_id)
+
+#TODO: refactor all to use cookie_from_record and record_from_cookie
+def load_lesson_record(record_id):
+    # Raises LessonRecord.DoesNotExist if not found
+    return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
 def cookie_from_lesson_record(lesson_record, secret_key):
     s = itsdangerous.URLSafeTimedSerializer(secret_key)
     return s.dumps(lesson_record.get_id())
-
 def lesson_record_from_cookie(cookie, secret_key, max_age = 3600): 
+    # Raises LessonRecord.DoesNotExist if not found
     s = itsdangerous.URLSafeTimedSerializer(secret_key)
     record_id = s.loads(cookie, max_age = max_age)
     return load_lesson_record(record_id)
