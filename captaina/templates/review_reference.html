@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block title %}Review reference{% endblock %}
+{% block body %}
+<script src="{{ url_for('static', filename='js/howler.js') }}"></script>
+<script>
+    var sound = new Howl({
+      src: [ "{{ url_for('teacher_bp.get_ogg', 
+              filekey = audio_record.filekey)}}" ],
+      sprite: {
+        {% for word in word_alignment %}
+        "{{ word[1].word }}": 
+        [{{word[1].start}}, {{word[1].length}}],
+        {% endfor %} }
+    });
+    sound.once('load', function(){
+      sound._sprite.all = [ 0, sound._duration * 1000];
+    });
+</script>
+<div class="greenboard">
+  <div class="listarea">
+    <h1> {{ audio_record.prompt.text }}</h1>
+    <div>
+      <span class="bigtext"> Current reference </span>
+      <button class="pure-button" onclick="sound.play('all')" type=button>
+      Play full</button>
+    </div>
+    </br>
+    </br>
+    Check that each word plays the full, correct word, and nothing else.
+
+    {% for word in word_alignment %}
+    <fieldset class="vspace">
+      <legend class="reviewword">{{ word[0] }}</legend>
+      <button class="pure-button" onclick="sound.play('{{ word[1].word }}')" type=button>
+       Play </button>
+      </fieldset> 
+    {% endfor %}
+    </br>
+    <a class="pure-button"
+       href="{{url_for('teacher_bp.lesson_overview',
+       lesson_url_id = lesson.url_id)}}">
+      Back to lesson</a>
+    <a class="pure-button" 
+      href="{{ url_for('teacher_bp.read',
+      lesson_url_id = lesson.url_id,
+      graph_id = prompt.graph_id) }}">
+      Re-record</a>
+  </div>
+</div>
+{% endblock %}
