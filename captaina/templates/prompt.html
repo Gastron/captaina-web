@@ -26,10 +26,17 @@ var prompt_text = "{{ prompt.text }}";
 var graph_id = "{{ prompt.graph_id }}";
 var record_cookie = "{{ record_cookie }}";
 var reference_record = {{ "true" if reference_record else "false" }};
-var next_page = {% if reference_record %}"{{ url_for('teacher_bp.review_reference', 
+var review_page = {% if reference_record %}"{{ url_for('teacher_bp.review_reference', 
     lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}"
-    {% else %}"reload"
+    {% else %}"{{ url_for('lesson_bp.see_review', 
+    lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}"
     {% endif %}
+var next_prompt = {% if reference_record %}"{{ url_for('teacher_bp.read_next', 
+    lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}"
+    {% else %}"{{ url_for('lesson_bp.read_next', 
+    lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}"
+    {% endif %}
+
 
 </script>
 <script src="{{ url_for('static', filename='js/dictate.js') }}"></script>

@@ -2,11 +2,10 @@ from flask import redirect, url_for, current_app, Blueprint, render_template, fl
         send_from_directory
 from flask_login import login_required, current_user
 from ..models import Lesson, Prompt, LessonRecord, AudioReview, \
-        cookie_from_lesson_record, lesson_record_from_cookie, \
-        create_and_queue_lesson_from_form, fetch_word_alignment, choose_word_alignments, \
+        create_and_queue_lesson_from_form, get_matched_alignment, \
         cookie_from_record, record_from_cookie, get_or_make_reference_record
 from ..forms import LessonCreatorForm, EmptyForm
-from ..utils import get_or_404, teacher_only, match_words_and_aligns, pad_aligns, aligns_to_millis
+from ..utils import get_or_404, teacher_only
 import pymongo as mongo
 
 teacher_bp = Blueprint('teacher_bp', __name__)
@@ -34,6 +33,7 @@ def create_lesson():
         return redirect(url_for('teacher_bp.overview'))
     return render_template('lesson_creator.html', form=form)
 
+#TODO: this should be named similarly, and the url should be the same, as in lesson_bp
 @teacher_bp.route('/lesson/<lesson_url_id>')
 @login_required
 @teacher_only
@@ -43,7 +43,7 @@ def lesson_overview(lesson_url_id):
     filtered = filter(lambda record: record.is_complete(), records)
     filtered = filter(lambda record: 
             next_audio_record_to_review(record, current_user) is not None, filtered)
-    record_cookies = map(lambda r: cookie_from_lesson_record(r, current_app.config["SECRET_KEY"]),
+    record_cookies = map(lambda r: cookie_from_record(r, current_app.config["SECRET_KEY"]),
             records)
     return render_template('lesson_review.html', 
             lesson = lesson, 
@@ -71,6 +71,26 @@ def read(lesson_url_id, graph_id):
             record_cookie = record_cookie,
             reference_record = True) 
 
+@teacher_bp.route('/<lesson_url_id>/<graph_id>/read_next')
+@login_required
+@teacher_only
+def read_next(lesson_url_id, graph_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    try:
+        #Find the prompt in the lesson (verify input) 
+        prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
+            if prompt.graph_id == graph_id][0] #[0] to pick the first; there should only be one
+    except IndexError:
+        abort(404)
+    if (prompt_index + 1) == len(lesson.prompts):
+        flash("All done", category="success")
+        return redirect(url_for('teacher_bp.lesson_overview',
+            lesson_url_id = lesson_url_id))
+    else:
+        return redirect(url_for('teacher_bp.read',
+            lesson_url_id = lesson_url_id,
+            graph_id = lesson.prompts[prompt_index+1].graph_id))
+
 @teacher_bp.route('/lesson/<lesson_url_id>/<graph_id>/reference')
 @login_required
 @teacher_only
@@ -86,11 +106,7 @@ def review_reference(lesson_url_id, graph_id):
     audio_record = record.get_reference(prompt)
     if audio_record is None:
         abort(404)
-    word_aligns = fetch_word_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
-    chosen_aligns = choose_word_alignments(word_aligns)
-    millis = aligns_to_millis(chosen_aligns)
-    padded = pad_aligns(millis)
-    matched_aligns = match_words_and_aligns(audio_record, padded)
+    matched_aligns = get_matched_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
     return render_template("review_reference.html",
             lesson = lesson,
             prompt = prompt,
@@ -123,17 +139,13 @@ def unpublish_lesson(lesson_url_id):
 @login_required
 @teacher_only
 def review_lesson_record(lesson_url_id, record_cookie):
-    lesson_record = lesson_record_from_cookie(record_cookie, current_app.config["SECRET_KEY"])
+    lesson_record = record_from_cookie(record_cookie, current_app.config["SECRET_KEY"])
     audio_record = next_audio_record_to_review(lesson_record, current_user)
     if request.method == 'GET' and audio_record is None:
         flash("Review completed", category="success")
         return redirect(url_for('teacher_bp.lesson_overview',
             lesson_url_id = lesson_url_id))
-    word_aligns = fetch_word_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
-    chosen_aligns = choose_word_alignments(word_aligns)
-    millis = aligns_to_millis(chosen_aligns)
-    padded = pad_aligns(millis)
-    matched = match_words_and_aligns(audio_record, padded)
+    matched = get_matched_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
     form = EmptyForm() #For CSRF token
     if request.method == 'POST' and form.validate_on_submit():
         review = dict(request.form)

@@ -50,12 +50,42 @@ def fetch_word_alignment(audio_record, audio_store_path):
     align_file_path = id_path.with_suffix(".ali.json") 
     return json.loads(align_file_path.read_text())["word-alignment"]
 
+def aligns_to_millis(aligns):
+    return [{
+        "word": align["word"], 
+        "start": int(1000*align["start"]),
+        "length": int(1000*align["length"])} for align in aligns]
+
+def pad_aligns(aligns, front_pad=10, end_pad=10):
+    """ Add padding milliseconds of padding to aligns. Assumed aligns already in millis. """
+    result = aligns[:]
+    for align in result:
+        align["start"] = align["start"]-front_pad
+        if align["start"] < 0:
+            align["start"] = 0
+        align["length"] += end_pad
+    return result
+
+def match_words_and_aligns(audio_record, aligns):
+    words = audio_record.prompt.text.split()
+    if not len(words) == len(aligns):
+        raise ValueError("Prompt and align do not match!")
+    return list(zip(words, aligns, range(len(words)))) # add an index also
+
+def get_matched_alignment(audio_record, audio_store_path, front_pad=10, end_pad=10):
+    word_aligns = fetch_word_alignment(audio_record, audio_store_path)
+    chosen_aligns = choose_word_alignments(word_aligns)
+    millis = aligns_to_millis(chosen_aligns)
+    padded = pad_aligns(millis)
+    matched_aligns = match_words_and_aligns(audio_record, padded)
+    return matched_aligns
+
 class LessonRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)
     lesson = modm.fields.ReferenceField(Lesson)
-    sequence_id = modm.fields.IntegerField()
     audio_records = modm.fields.ListField(modm.fields.ReferenceField(AudioRecord),
             blank = True, default = list)
+    submitted = modm.fields.BooleanField(default = False)
     created = modm.fields.DateTimeField(default = datetime.now)
     modified  = modm.fields.DateTimeField(default = datetime.now)
 
@@ -67,15 +97,14 @@ class LessonRecord(modm.MongoModel):
         #Each record is uniquely identified by the user, lesson and sequence id combination
         indexes = [mongo.operations.IndexModel([
             ('user', mongo.ASCENDING),
-            ('lesson', mongo.ASCENDING),
-            ('sequence_id', mongo.DESCENDING)], unique = True)] 
+            ('lesson', mongo.ASCENDING)], unique = True)] 
 
     def get_id(self):
         return bson.json_util.dumps(self._id)
 
     def is_complete(self):
-        #A bit convoluted, but:
-        #Make sure there is at least one audio_record which passed validation
+        # A bit convoluted, but:
+        # Make sure there is at least one audio_record which passed validation
         # for each prompt
         for prompt in self.lesson.prompts:
             if not any(record.prompt == prompt and record.passed_validation
@@ -89,18 +118,36 @@ class LessonRecord(modm.MongoModel):
                     for record in self.audio_records):
                 return i
         return len(self.lesson.prompts)
+
+    def recording_exists(self, prompt):
+        if any(record for record in self.audio_records if
+                record.passed_validation and record.prompt == prompt):
+            return True
+        else:
+            return False
+
+    def get_audiorecord(self, prompt):
+        """ Gets the currently chosen AudioRecord for the given prompt.
+        This is the latest validated entry. """
+        possible_records = [record for record in self.audio_records if
+                record.passed_validation and record.prompt == prompt]
+        if not possible_records:
+            return None
+        else:
+            #Current decision: return the latest one
+            return possible_records[-1]
     
     def validated_audio_records(self):
         return [record for record in self.audio_records if record.passed_validation]
 
     def reviews_exist(self):
+        if not (self.is_complete() and self.submitted):
+            return False
         from .review import AudioReview
         validated_records = self.validated_audio_records()
-        if not validated_records:
-            return False
         for audio_record in validated_records:
             try:
-                AudioReview.objects.get({"audio_record": audio_record.pk})
+                AudioReview.objects.raw({"audio_record": audio_record.pk}).first()
             except AudioReview.DoesNotExist:
                 return False
         return True
@@ -142,6 +189,26 @@ class ReferenceRecord(modm.MongoModel):
             ('user', mongo.ASCENDING),
             ('lesson', mongo.ASCENDING)], unique = True)] 
 
+
+def get_references_for_prompt(lesson, prompt):
+    references = ReferenceRecord.objects.raw({'lesson': lesson.pk})
+    audio_records = []
+    for reference in references:
+        if reference.reference_exists(prompt):
+            audio_records.append(reference.get_reference(prompt))
+    return audio_records
+
+def get_or_make_lesson_record(user, lesson):
+    try:
+        return LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk}).first()
+    except LessonRecord.DoesNotExist:
+        record = LessonRecord(user = user.pk, 
+                lesson = lesson.pk)
+        record.save(force_insert = True)
+        return record
+    except mongo.errors.DuplicateKeyError: #Duplicate request
+        raise ValueError("Duplicate request")
+
 def get_or_make_reference_record(user, lesson):
     try:
         return ReferenceRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk}).first()
@@ -153,6 +220,15 @@ def get_or_make_reference_record(user, lesson):
     except mongo.errors.DuplicateKeyError: #Duplicate request
         raise ValueError("Duplicate request")
 
+def get_record(user, lesson):
+    try:
+        return LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk}).first()
+    except LessonRecord.DoesNotExist:
+        try:
+            return ReferenceRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk}).first()
+        except ReferenceRecord.DoesNotExist:
+            raise ValueError("Record does not exist")
+
 def load_record(record_id):
     try:
         return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
@@ -161,6 +237,8 @@ def load_record(record_id):
             return ReferenceRecord.objects.get({"_id": bson.json_util.loads(record_id)})
         except ReferenceRecord.DoesNotExist:
             raise ValueError("Record does not exist")
+
+
 
 def cookie_from_record(record, secret_key):
     s = itsdangerous.URLSafeTimedSerializer(secret_key)
@@ -171,54 +249,3 @@ def record_from_cookie(cookie, secret_key, max_age = 3600):
     s = itsdangerous.URLSafeTimedSerializer(secret_key)
     record_id = s.loads(cookie, max_age = max_age)
     return load_record(record_id)
-
-#TODO: refactor all to use cookie_from_record and record_from_cookie
-def load_lesson_record(record_id):
-    # Raises LessonRecord.DoesNotExist if not found
-    return LessonRecord.objects.get({"_id": bson.json_util.loads(record_id)})
-def cookie_from_lesson_record(lesson_record, secret_key):
-    s = itsdangerous.URLSafeTimedSerializer(secret_key)
-    return s.dumps(lesson_record.get_id())
-def lesson_record_from_cookie(cookie, secret_key, max_age = 3600): 
-    # Raises LessonRecord.DoesNotExist if not found
-    s = itsdangerous.URLSafeTimedSerializer(secret_key)
-    record_id = s.loads(cookie, max_age = max_age)
-    return load_lesson_record(record_id)
-
-def get_latest_lesson_record(user, lesson):
-    #raises LessonRecord.DoesNotExist if not found
-    records = LessonRecord.objects.raw({'user':user.pk, 'lesson':lesson.pk})
-    if records.count() == 0:
-        raise LessonRecord.DoesNotExist()
-    result = records.order_by([('sequence_id', mongo.DESCENDING)]).first()
-    if result is None:
-        raise LessonRecord.DoesNotExist()
-    return result
-
-def ensure_and_get_latest_lesson_record(user, lesson):
-    try:
-        return get_latest_lesson_record(user,lesson)
-    except LessonRecord.DoesNotExist:
-        record = LessonRecord(user = user.pk, 
-                lesson = lesson.pk,
-                sequence_id = 1)
-        record.save(force_insert = True)
-        return record
-    except mongo.errors.DuplicateKeyError: #Duplicate request
-        raise ValueError("Duplicate request")
-
-def ensure_and_get_incomplete_lesson_record(user, lesson):
-    #Fetches or creates an incomplete lesson record for the user, lesson combination
-    #If there is a duplicate request and the record cannot be created, raises ValueError
-    old_record = ensure_and_get_latest_lesson_record(user, lesson)
-    if not old_record.is_complete():
-        return old_record
-    else:
-        try:
-            new_record = LessonRecord(user = user.pk, 
-                    lesson = lesson.pk,
-                    sequence_id = old_record.sequence_id + 1)
-            new_record.save(force_insert = True) 
-            return new_record
-        except mongo.errors.DuplicateKeyError: #Duplicate request
-            raise ValueError("Duplicate request")

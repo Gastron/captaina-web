@@ -13,26 +13,58 @@
         {% endfor %}
       }
     });
+  var references = {
+    {% for teacher_record, alignment in teacher_alignments %}
+    "{{ teacher_record.user.username }}": new Howl({
+      src: [ "{{ url_for('teacher_bp.get_ogg', 
+              filekey = teacher_record.filekey)}}" ],
+      sprite: {
+        {% for word, align, word_id in alignment %} {#TODO: This is horribly incompatible #}
+        "{{ align["word"] }}": 
+        [{{ align["start"] }}, {{ align["length"] }}],
+        {% endfor %}
+      }
+    }),
+    {% endfor %}
+  };
 </script>
 <div class="purpleboard">
 
   <div class="listarea">
   <h1> {{ audio_record.prompt.text }}</h1>
+  {% if teacher_alignments %}
+  <select id="reference_select">
+    {% for teacher_record, alignment in teacher_alignments %}
+		<option value="{{teacher_record.user.username}}">{{teacher_record.user.username}}</option>
+    {% endfor %}
+	</select>
+ 	{% endif %}
 
   {% for word in word_list %}
     <fieldset>
       <legend class="reviewword">{{ word["as_written"] }}</legend>
       <button class="pure-button" onclick="sound.play('{{ word["word_id"] }}')" type=button>
-       Play </button>
+       Play yours </button>
+
+      {% if teacher_alignments %}
+      <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+      <button class="pure-button" 
+        onclick="references[$('#reference_select').val()].play('{{ word["word_id"] }}')" type=button>
+       Play reference </button>
+      {% endif %}
+
+      {% if lesson_record.reviews_exist() %}
       <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
       Score: {{ word["score"] }}
+      {% endif %}
     </fieldset> 
     {% endfor %}
   {% if next_num != None %}
     <a class="pure-button widebtn vspace"
-       href="{{ url_for("lesson_bp.browse_reviews",
-        record_cookie = record_cookie,
-        prompt_num = next_num) }}">Next prompt</a>
+       href="{{ url_for("lesson_bp.see_next_review",
+       lesson_url_id = lesson.url_id,
+       graph_id = prompt.graph_id
+        ) }}">Next prompt</a>
   {% else %}
    <a class="pure-button widebtn vspace"
        href="{{ url_for("lesson_bp.overview",

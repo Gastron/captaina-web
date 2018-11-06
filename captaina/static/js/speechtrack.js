@@ -196,7 +196,15 @@ function getReloadButton(button_text) {
 }
 function getNextButton(button_text) {
   var button = document.createElement('a');
-  button.href = next_page;
+  button.href = next_prompt;
+  button.classList.add("pure-button");
+  button.innerHTML = button_text;
+  button.focus();
+  return button
+}
+function getReviewButton(button_text) {
+  var button = document.createElement('a');
+  button.href = review_page;
   button.classList.add("pure-button");
   button.innerHTML = button_text;
   button.focus();
@@ -224,12 +232,17 @@ function showAccepted() {
   verdict.innerHTML = '<h2 class="yeah">Validation: accept</h2>';
   popup.appendChild(verdict);
   if (reference_record) {
-    button = getNextButton("Review");
+    button = getReviewButton("Review");
+    popup.appendChild(button);
+    popup.classList.add("show");
   } else {
-    button = getReloadButton("Next!");
+    button = getNextButton("Next!");
+    popup.appendChild(button);
+    popup.classList.add("show");
+    button = getReviewButton("Review");
+    popup.appendChild(button);
+    popup.classList.add("show");
   }
-  popup.appendChild(button);
-  popup.classList.add("show");
 }
 
 

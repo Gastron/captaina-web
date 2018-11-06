@@ -3,33 +3,40 @@
 {% block body %}
 <div class="whiteboard">
   <div class="listarea">
-  <h1>{{lesson.label}}</h1>
-  {% for lesson_record in lesson_records %}
-    <div class="listy">
-      <div class="listyleft">
-      Read-through #{{ lesson_record.sequence_id }} </br>
-      {{ lesson_record.num_prompts_completed() }}/{{total_prompts}} completed.
+    <h1>{{lesson.label}}</h1>
+    <h2>Prompts:</h2>
+    {% for prompt in lesson.prompts[:lesson_record.num_prompts_completed() + 1] %}
+    <div class="listy greenblock pure-g">
+      <div class="listyleft pure-u-2-3">
+        {{ prompt.text }}
       </div>
-      <div class="listyright">
-      {% if not lesson_record.is_complete() %}
-        <a class="pure-button" href="{{ url_for('lesson_bp.read',
-        lesson_url_id = lesson.url_id) }}">Continue</a>
-      {% endif %}
-      {% if lesson_record.reviews_exist() %}
-        <a class="pure-button" href="{{ url_for('lesson_bp.browse_reviews',
-        record_cookie = lesson_record.record_cookie, prompt_num=1) }}">See review</a>
-      {% endif %}
+      <div class="listyright pure-u-1-3">
+        {% if lesson_record.recording_exists(prompt) %}
+        <a class="pure-button" 
+          href="{{ url_for('lesson_bp.see_review', 
+lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}">
+          Review</a>
+        {% else %}
+        <a class="pure-button" 
+          href="{{ url_for('lesson_bp.read',
+          lesson_url_id = lesson.url_id,
+          graph_id = prompt.graph_id) }}">
+          Record</a>
+        {% endif %}
       </div>
     </div>
-  {% endfor %}
+    {% endfor %}
+    {#{% if lesson_record.reviews_exist() %}
+      <a class="pure-button" href="{{ url_for('lesson_bp.browse_reviews',
+      record_cookie = lesson_record.record_cookie, prompt_num=1) }}">See review</a>
+      {% endif %}#}
   </br>
-
   <a class="pure-button" href="{{ url_for('dashboard_bp.dashboard') }}">
     Back to dashboard
   </a>
-  {% if all_done %}
-    <a class="pure-button" href="{{ url_for('lesson_bp.start_new',
-    lesson_url_id = lesson.url_id) }}">Take lesson again</a>
+  {% if lesson_record.is_complete() %}
+    <a class="pure-button" href="{{ url_for('lesson_bp.submit',
+    lesson_url_id = lesson.url_id) }}">Submit this work</a>
   {% endif %}
   </div>
 </div>

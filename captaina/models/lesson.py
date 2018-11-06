@@ -19,6 +19,17 @@ class Prompt(modm.MongoModel):
     class Meta:
         indexes = [mongo.operations.IndexModel([('graph_id', 1)], unique = True)] 
 
+def check_prompt_list():
+    #Makes sure that all the prompts returned by graph-creator have a Prompt object
+    graphs_request = requests.get("http://graph-creator:5000/list-graphs")
+    graphs = graphs_request.json()
+    for graph_id, uniqued_text in graphs.items():
+        try:
+            prompt = Prompt(text=uniqued_text, graph_id=graph_id)
+            prompt.save(force_insert = True)
+        except mongo.errors.DuplicateKeyError:
+            pass #It's cool.
+
 class Lesson(modm.MongoModel):
     label = modm.fields.CharField(required = True)
     url_id = modm.fields.CharField(required = True)
@@ -65,6 +76,7 @@ def create_and_queue_lesson_from_form(form):
         raise ValueError("No sentences remain after filtering")
     for sentence in sentences:
         prompt = Prompt(text = sentence)
+        check_prompt_list()
         prompt = mongo_serial_unique_attribute(prompt, "graph_id", lesson.url_id)
         response = requests.post("http://graph-creator:5000/create-graph", 
                 json={'key': prompt.graph_id,

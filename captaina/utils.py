@@ -37,39 +37,17 @@ def role_restriction(func, role):
     return decorated_view
 teacher_only = lambda func: role_restriction(func, "teacher")
 student_only = lambda func: role_restriction(func, "student")
-    
-def aligns_to_millis(aligns):
-    return [{
-        "word": align["word"], 
-        "start": int(1000*align["start"]),
-        "length": int(1000*align["length"])} for align in aligns]
-
-def pad_aligns(aligns, front_pad=10, end_pad=10):
-    """ Add padding milliseconds of padding to aligns. Assumed aligns already in millis. """
-    result = aligns[:]
-    for align in result:
-        align["start"] = align["start"]-front_pad
-        if align["start"] < 0:
-            align["start"] = 0
-        align["length"] += end_pad
-    return result
-
-
-def match_words_and_aligns(audio_record, aligns):
-    words = audio_record.prompt.text.split()
-    if not len(words) == len(aligns):
-        raise ValueError("Prompt and align do not match!")
-    return list(zip(words, aligns, range(len(words))))
 
 def average_review(reviews):
+    """ Returns the mean review score. If more than half of all reviews were na, returns na"""
+    if not reviews: return "na"
     no_na = list(filter(lambda r: r != "na", reviews))
-    print(no_na)
-    if len(no_na) < len(reviews)/2:
+    if len(no_na) <= len(reviews)/2:
         return "na"
     else:
         return sum(map(int, no_na)) // len(no_na) #With rounding
 
-def match_aligns_words_and_reviews(matched_aligns, reviews):
+def match_alignment_words_and_reviews(matched_aligns, reviews):
     matched = []
     for word, align, word_index in matched_aligns:
         this_word_reviews = [review.get_rating(align["word"]) for review in reviews]
@@ -79,7 +57,6 @@ def match_aligns_words_and_reviews(matched_aligns, reviews):
             "start": align["start"],
             "length": align["length"]})
     return matched
-
 
 def prefix_application_path(app, prefix):
     """ Add a prefix to all URLs. Need this typically for serving the whole application
