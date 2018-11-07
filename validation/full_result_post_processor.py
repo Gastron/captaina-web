@@ -105,7 +105,7 @@ def write_output(result):
 def do_post_processing(asr_output):
     try:
         parsed, data = parse(asr_output)
-    except ValueError():
+    except ValueError:
         write_output(json.dumps({"status": "error"}))
         return
     ref = get_ref(parsed["graph_id"])
