@@ -37,10 +37,11 @@ def log_audio():
     #Create audio record:
     audio_record = AudioRecord(user=user, prompt=prompt, filekey=filekey,
         passed_validation=passed_validation)
-    if not validate_audio_record_files(audio_record, 
-            current_app.config["AUDIO_UPLOAD_PATH"]):
-        current_app.logger.info("Audio or align not found in log-audio request")
-        return Response("Audio or align not found", status = 200, mimetype = "text/plain")
+    #TODO: Figure out why this validation does not work on server
+    #if not validate_audio_record_files(audio_record, 
+    #        current_app.config["AUDIO_UPLOAD_PATH"]):
+    #    current_app.logger.info("Audio or align not found in log-audio request")
+    #    return Response("Audio or align not found", status = 200, mimetype = "text/plain")
     try:
         audio_record.save(force_insert = True)
     except mongo.errors.DuplicateKeyError:
