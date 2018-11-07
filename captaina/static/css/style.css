@@ -347,6 +347,15 @@ input[type=textarea] {
   font-size: x-large;
   margin-right: 2em;
 }
+.mediumtext {
+  font-weight: bold;
+}
+
+.mediumbox {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
 
 .hider {
   visibility: hidden;
@@ -483,6 +492,17 @@ hr.promptline {
 }
 .minimallist {
   list-style-type: decimal;
+}
+
+#reference_select {
+  width:100%;
+  color: #888178; /* Aalto gray */
+  font-size: 16px;
+  border: 1px solid #ccc;
+  height: 34px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 

@@ -236,10 +236,11 @@ function showAccepted() {
     popup.appendChild(button);
     popup.classList.add("show");
   } else {
-    button = getNextButton("Next!");
+    button = getNextButton("Next");
     popup.appendChild(button);
     popup.classList.add("show");
     button = getReviewButton("Review");
+    button.classList.add("hspace");
     popup.appendChild(button);
     popup.classList.add("show");
   }
