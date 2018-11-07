@@ -1,5 +1,5 @@
 from flask import redirect, url_for, current_app, Blueprint, render_template, flash, request,\
-        send_from_directory
+        send_from_directory, abort
 from flask_login import login_required, current_user
 from ..models import Lesson, Prompt, LessonRecord, AudioReview, \
         create_and_queue_lesson_from_form, get_matched_alignment, \
