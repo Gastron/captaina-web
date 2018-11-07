@@ -27,6 +27,15 @@
     }),
     {% endfor %}
   };
+  sound.once('load', function(){
+    sound._sprite.all = [ 0, sound._duration * 1000];
+  });
+  {% for teacher_record, alignment in teacher_alignments %}
+  references["{{ teacher_record.user.username }}"].once('load', function() {
+    references["{{ teacher_record.user.username }}"]._sprite.all = [ 0,
+      references["{{ teacher_record.user.username }}"]._duration * 1000];
+  });
+  {% endfor %}
 </script>
 <div class="purpleboard">
 
@@ -41,34 +50,39 @@
  	{% endif %}
 
   {% for word in word_list %}
-    <fieldset>
-      <legend class="reviewword">{{ word["as_written"] }}</legend>
-      <button class="pure-button" onclick="sound.play('{{ word["word_id"] }}')" type=button>
-       Play yours </button>
+  <fieldset>
+    <legend class="reviewword">{{ word["as_written"] }}</legend>
+    <button class="pure-button" onclick="sound.play('{{ word["word_id"] }}')" type=button>
+     Play yours </button>
 
-      {% if teacher_alignments %}
-      <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
-      <button class="pure-button" 
-        onclick="references[$('#reference_select').val()].play('{{ word["word_id"] }}')" type=button>
-       Play reference </button>
-      {% endif %}
+    {% if teacher_alignments %}
+    <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+    <button class="pure-button" 
+      onclick="references[$('#reference_select').val()].play('{{ word["word_id"] }}')" type=button>
+     Play reference </button>
+    {% endif %}
 
-      {% if lesson_record.reviews_exist() %}
-      <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
-      Score: {{ word["score"] }}
-      {% endif %}
-    </fieldset> 
-    {% endfor %}
+    {% if lesson_record.reviews_exist() %}
+    <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+    Score: {{ word["score"] }}
+    {% endif %}
+  </fieldset> 
+  {% endfor %}
+  <a class="pure-button widebtn vspace"
+       href="{{ url_for("lesson_bp.overview",
+        lesson_url_id = lesson.url_id) }}">Back to lesson</a>
+  {% if not lesson_record.submitted %}
+  <a class="pure-button widebtn vspace"
+       href="{{ url_for("lesson_bp.read",
+        lesson_url_id = lesson.url_id,
+        graph_id = prompt.graph_id) }}">Re-record</a>
+  {% endif %}
   {% if next_num != None %}
     <a class="pure-button widebtn vspace"
        href="{{ url_for("lesson_bp.see_next_review",
        lesson_url_id = lesson.url_id,
        graph_id = prompt.graph_id
         ) }}">Next prompt</a>
-  {% else %}
-   <a class="pure-button widebtn vspace"
-       href="{{ url_for("lesson_bp.overview",
-        lesson_url_id = lesson_url_id) }}">Back to dashboard</a>
   {% endif %}
   </div>
  </div>

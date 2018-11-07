@@ -35,6 +35,10 @@ def overview(lesson_url_id):
 def read(lesson_url_id, graph_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     lesson_record = get_or_make_lesson_record(current_user, lesson)
+    if lesson_record.submitted:
+        flash("You have already submitted your work", category = "error")
+        return redirect(url_for('lesson_bp.overview',
+            lesson_url_id = lesson_url_id))
     try:
         #Find the prompt in the lesson (verify input) 
         prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
@@ -85,7 +89,9 @@ def see_review(lesson_url_id, graph_id):
         abort(404)
     student_audio_record = lesson_record.get_audiorecord(prompt)
     if student_audio_record is None:
-        abort(404)
+        return redirect(url_for("lesson_bp.read", 
+            lesson_url_id = lesson_url_id,
+            graph_id = graph_id))
     teacher_audio_records = get_references_for_prompt(lesson, prompt)
     try:
         reviews = AudioReview.objects.raw({"audio_record": student_audio_record.pk})
@@ -133,9 +139,22 @@ def see_next_review(lesson_url_id, graph_id):
             lesson_url_id = lesson_url_id,
             graph_id = lesson.prompts[prompt_index+1].graph_id))
             
-@lesson_bp.route('/<lesson_url_id>')
+@lesson_bp.route('/<lesson_url_id>/submit', methods = ["POST"])
 @login_required
 @student_only
 def submit(lesson_url_id):
-    #TODO
-    return "OK"
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    lesson_record = get_or_make_lesson_record(current_user, lesson)
+    if not lesson_record.is_complete():
+        flash("You have not read all sentences yet!", category="error")
+        return redirect(url_for('lesson_bp.overview',
+            lesson_url_id = lesson_url_id))
+    if lesson_record.submitted:
+        flash("You have already submitted this lesson.", category="info")
+        return redirect(url_for('lesson_bp.overview',
+            lesson_url_id = lesson_url_id))
+    lesson_record.submitted = True
+    lesson_record.save() 
+    flash("Submitted for teacher's rating.", category="success")
+    return redirect(url_for('lesson_bp.overview',
+        lesson_url_id = lesson_url_id))

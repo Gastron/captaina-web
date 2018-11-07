@@ -40,7 +40,7 @@ def create_lesson():
 def lesson_overview(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     records = LessonRecord.objects.raw({'lesson': lesson.pk}).order_by([('modified', mongo.DESCENDING)])
-    filtered = filter(lambda record: record.is_complete(), records)
+    filtered = filter(lambda record: record.is_complete() and record.submitted, records)
     filtered = filter(lambda record: 
             next_audio_record_to_review(record, current_user) is not None, filtered)
     record_cookies = map(lambda r: cookie_from_record(r, current_app.config["SECRET_KEY"]),

@@ -7,10 +7,10 @@
     <h2>Prompts:</h2>
     {% for prompt in lesson.prompts[:lesson_record.num_prompts_completed() + 1] %}
     <div class="listy greenblock pure-g">
-      <div class="listyleft pure-u-2-3">
+      <div class="listyleft pure-u-1-2">
         {{ prompt.text }}
       </div>
-      <div class="listyright pure-u-1-3">
+      <div class="listyright pure-u-1-2">
         {% if lesson_record.recording_exists(prompt) %}
         <a class="pure-button" 
           href="{{ url_for('lesson_bp.see_review', 
@@ -34,9 +34,13 @@ lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}">
   <a class="pure-button" href="{{ url_for('dashboard_bp.dashboard') }}">
     Back to dashboard
   </a>
-  {% if lesson_record.is_complete() %}
-    <a class="pure-button" href="{{ url_for('lesson_bp.submit',
-    lesson_url_id = lesson.url_id) }}">Submit this work</a>
+  {% if lesson_record.is_complete() and not lesson_record.submitted %}
+    <form action="{{ url_for('lesson_bp.submit',
+    lesson_url_id = lesson.url_id) }}" method="post" class="inline-form">
+          <input type="submit" class="pure-button" name="submit" value="Submit for review" 
+            onclick="return confirm('You cannot re-record after submitting. Are you sure?')"/>
+          <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
+    </form>
   {% endif %}
   </div>
 </div>
