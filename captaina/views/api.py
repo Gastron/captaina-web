@@ -29,8 +29,11 @@ def log_audio():
     except Prompt.DoesNotExist:
         current_app.logger.info("Invalid graph_id in log-audio request")
         return Response("Invalid graph_id", status = 400, mimetype = "text/plain")
-    if record.submitted:
-        abort(403)
+    try:
+        if record.submitted:
+            abort(403)
+    except AttributeError:
+        pass #ReferenceRecord has no "submitted"
     #Create audio record:
     audio_record = AudioRecord(user=user, prompt=prompt, filekey=filekey,
         passed_validation=passed_validation)
@@ -57,10 +60,13 @@ def verify_record_cookie():
     cookie = data["record-cookie"]
     try:
         record = record_from_cookie(cookie, current_app.config["SECRET_KEY"])
-        if not record.submitted:
+        try:
+            if not record.submitted:
+                resp = "OK"
+            else:
+                resp = "Record already submitted"
+        except AttributeError:
             resp = "OK"
-        else:
-            resp = "Record already submitted"
     except ValueError:
         resp = "Record not found"
     except itsdangerous.BadData:
