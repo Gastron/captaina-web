@@ -1,10 +1,9 @@
 from flask import redirect, url_for, current_app, Blueprint, render_template, flash, request
 from flask_login import login_required, current_user
-from ..models import Lesson, Prompt, LessonRecord, cookie_from_lesson_record,\
-        get_latest_lesson_record, ensure_and_get_incomplete_lesson_record, \
-        lesson_record_from_cookie, AudioReview, fetch_word_alignment, choose_word_alignments
-from ..utils import get_or_404, student_only, \
-        match_words_and_aligns, pad_aligns, aligns_to_millis, match_aligns_words_and_reviews
+from ..models import Lesson, Prompt, LessonRecord, cookie_from_record,\
+        record_from_cookie, AudioReview, get_matched_alignment, \
+        get_or_make_lesson_record, get_record, get_references_for_prompt
+from ..utils import get_or_404, student_only, match_alignment_words_and_reviews
 import pymongo as mongo
 
 lesson_bp = Blueprint('lesson_bp', __name__)
@@ -15,89 +14,147 @@ lesson_bp = Blueprint('lesson_bp', __name__)
 @student_only
 def overview(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    if not lesson.is_public:
+        abort(403)
     try:
-        lesson_record = get_latest_lesson_record(current_user, lesson)
-    except LessonRecord.DoesNotExist:
-        return redirect(url_for('lesson_bp.start_new',
-            lesson_url_id = lesson_url_id))
-    lesson_records = LessonRecord.objects.raw({
-        'user': current_user.pk, 
-        'lesson': lesson.pk})
+        lesson_record = get_record(current_user, lesson)
+    except ValueError:
+        #First time! 
+        return redirect(url_for('lesson_bp.read',
+            lesson_url_id = lesson_url_id,
+            graph_id = lesson.prompts[0].graph_id))
     total_prompts = len(lesson.prompts)
-    all_done = all(lesson_record.is_complete() for lesson_record in lesson_records)
-    lesson_records = attach_cookies(lesson_records)
     return render_template("lesson_overview.html",
             lesson = lesson,
-            lesson_records = lesson_records,
-            total_prompts = total_prompts,
-            all_done = all_done)
-
-def attach_cookies(lesson_records):
-    result = []
-    for lesson_record in lesson_records:
-        setattr(lesson_record, "record_cookie", cookie_from_lesson_record(lesson_record, 
-                current_app.config["SECRET_KEY"]))
-        result.append(lesson_record)
-    return result
-
-@lesson_bp.route('/<lesson_url_id>/start_new/')
-@login_required
-@student_only
-def start_new(lesson_url_id):
-    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
-    ensure_and_get_incomplete_lesson_record(current_user, lesson)
-    return redirect(url_for('lesson_bp.read',
-        lesson_url_id = lesson_url_id))
+            lesson_record = lesson_record,
+            total_prompts = total_prompts)
       
-@lesson_bp.route('/<lesson_url_id>/read')
+@lesson_bp.route('/<lesson_url_id>/<graph_id>/read')
 @login_required
 @student_only
-def read(lesson_url_id):
+def read(lesson_url_id, graph_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
-    lesson_record = get_latest_lesson_record(current_user, lesson)
-    if lesson_record.is_complete():
+    lesson_record = get_or_make_lesson_record(current_user, lesson)
+    if lesson_record.submitted:
+        flash("You have already submitted your work", category = "error")
         return redirect(url_for('lesson_bp.overview',
-                lesson_url_id = lesson_url_id))
-    prompt_index = lesson_record.num_prompts_completed()
+            lesson_url_id = lesson_url_id))
+    try:
+        #Find the prompt in the lesson (verify input) 
+        prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
+            if prompt.graph_id == graph_id][0] #[0] to pick the first; there should only be one
+    except IndexError:
+        abort(404)
     total_prompts = len(lesson.prompts)
-    prompt = lesson.prompts[prompt_index]
-    record_cookie = cookie_from_lesson_record(lesson_record, current_app.config["SECRET_KEY"])
-    current_app.logger.info(record_cookie)
+    record_cookie = cookie_from_record(lesson_record, current_app.config["SECRET_KEY"])
     return render_template("prompt.html", 
             lesson = lesson, 
             prompt = prompt,
             promptnum = prompt_index + 1,
             total_prompts = total_prompts,
-            record_cookie = record_cookie) 
+            record_cookie = record_cookie,
+            reference_record = False) #We are not making a reference recording
 
-@lesson_bp.route('/<record_cookie>/<int:prompt_num>')
+@lesson_bp.route('/<lesson_url_id>/<graph_id>/read_next')
 @login_required
 @student_only
-def browse_reviews(record_cookie, prompt_num):
+def read_next(lesson_url_id, graph_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     try:
-        lesson_record = lesson_record_from_cookie(record_cookie, current_app.config["SECRET_KEY"])
-    except:
-        abort(404)
-    try:
-        audio_record = lesson_record.validated_audio_records()[prompt_num-1]
+        #Find the prompt in the lesson (verify input) 
+        prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
+            if prompt.graph_id == graph_id][0] #[0] to pick the first; there should only be one
     except IndexError:
-        return redirect(url_for('lesson_bp.overview',
-            lesson_url_id = lesson_record.lesson.url_id))
-    try:
-        reviews = AudioReview.objects.raw({"audio_record": audio_record.pk})
-    except AudioReview.DoesNotExist:
         abort(404)
-    word_aligns = fetch_word_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
-    chosen_aligns = choose_word_alignments(word_aligns)
-    millis = aligns_to_millis(chosen_aligns)
-    padded = pad_aligns(millis)
-    matched_aligns = match_words_and_aligns(audio_record, padded)
-    matched_aligns_and_scores = match_aligns_words_and_reviews(matched_aligns, reviews)
-    return render_template("show_ratings.html",
-            lesson_url_id = lesson_record.lesson.url_id,
-            record_cookie = record_cookie,
-            audio_record = audio_record,
-            word_list = matched_aligns_and_scores,
-            next_num = prompt_num+1if prompt_num < lesson_record.num_prompts_completed() else None)
+    if (prompt_index + 1) == len(lesson.prompts):
+        flash("All done", category="success")
+        return redirect(url_for('lesson_bp.overview',
+            lesson_url_id = lesson_url_id))
+    else:
+        return redirect(url_for('lesson_bp.read',
+            lesson_url_id = lesson_url_id,
+            graph_id = lesson.prompts[prompt_index+1].graph_id))
 
+@lesson_bp.route('/<lesson_url_id>/<graph_id>/see_review')
+@login_required
+@student_only
+def see_review(lesson_url_id, graph_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    lesson_record = get_or_make_lesson_record(current_user, lesson)
+    try:
+        #Find the prompt in the lesson (verify input) 
+        prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
+            if prompt.graph_id == graph_id][0] #[0] to pick the first; there should only be one
+    except IndexError:
+        abort(404)
+    student_audio_record = lesson_record.get_audiorecord(prompt)
+    if student_audio_record is None:
+        return redirect(url_for("lesson_bp.read", 
+            lesson_url_id = lesson_url_id,
+            graph_id = graph_id))
+    teacher_audio_records = get_references_for_prompt(lesson, prompt)
+    try:
+        reviews = AudioReview.objects.raw({"audio_record": student_audio_record.pk})
+    except AudioReview.DoesNotExist:
+        reviews = None
+
+    #Student's aligns:
+    student_matched_alignment = get_matched_alignment(student_audio_record,
+            current_app.config["AUDIO_UPLOAD_PATH"])
+
+    #Reference aligns: 
+    teacher_matched_alignments = [
+            (audio_rec, get_matched_alignment(audio_rec, current_app.config["AUDIO_UPLOAD_PATH"]))
+            for audio_rec in teacher_audio_records]
+
+    matched_reviews = match_alignment_words_and_reviews(
+            student_matched_alignment,
+            reviews)
+
+    return render_template("show_ratings.html",
+            lesson = lesson,
+            prompt = prompt,
+            lesson_record = lesson_record,
+            audio_record = student_audio_record,
+            word_list = matched_reviews, #TODO: Call this something else than word_list
+            teacher_alignments = teacher_matched_alignments)
+
+@lesson_bp.route('/<lesson_url_id>/<graph_id>/see_next_review')
+@login_required
+@student_only
+def see_next_review(lesson_url_id, graph_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    try:
+        #Find the prompt in the lesson (verify input) 
+        prompt_index, prompt = [(i, prompt) for i, prompt in enumerate(lesson.prompts)
+            if prompt.graph_id == graph_id][0] #[0] to pick the first; there should only be one
+    except IndexError:
+        abort(404)
+    if (prompt_index + 1) == len(lesson.prompts):
+        flash("All done", category="success")
+        return redirect(url_for('lesson_bp.overview',
+            lesson_url_id = lesson_url_id))
+    else:
+        return redirect(url_for('lesson_bp.see_review',
+            lesson_url_id = lesson_url_id,
+            graph_id = lesson.prompts[prompt_index+1].graph_id))
             
+@lesson_bp.route('/<lesson_url_id>/submit', methods = ["POST"])
+@login_required
+@student_only
+def submit(lesson_url_id):
+    lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
+    lesson_record = get_or_make_lesson_record(current_user, lesson)
+    if not lesson_record.is_complete():
+        flash("You have not read all sentences yet!", category="error")
+        return redirect(url_for('lesson_bp.overview',
+            lesson_url_id = lesson_url_id))
+    if lesson_record.submitted:
+        flash("You have already submitted this lesson.", category="info")
+        return redirect(url_for('lesson_bp.overview',
+            lesson_url_id = lesson_url_id))
+    lesson_record.submitted = True
+    lesson_record.save() 
+    flash("Submitted for teacher's rating.", category="success")
+    return redirect(url_for('lesson_bp.overview',
+        lesson_url_id = lesson_url_id))

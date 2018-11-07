@@ -114,6 +114,7 @@ node_modules/
 docker_quick_init.sh
 debug_instance
 docker-compose.dev.yml
+docker-compose.production.yml
 
 #ctags:
 tags

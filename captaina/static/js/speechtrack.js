@@ -194,6 +194,22 @@ function getReloadButton(button_text) {
   button.focus();
   return button
 }
+function getNextButton(button_text) {
+  var button = document.createElement('a');
+  button.href = next_prompt;
+  button.classList.add("pure-button");
+  button.innerHTML = button_text;
+  button.focus();
+  return button
+}
+function getReviewButton(button_text) {
+  var button = document.createElement('a');
+  button.href = review_page;
+  button.classList.add("pure-button");
+  button.innerHTML = button_text;
+  button.focus();
+  return button
+}
 
 function showRejected(reasontext) {
   var popup = document.getElementById('popup');
@@ -215,9 +231,19 @@ function showAccepted() {
   var verdict = document.createElement('div');
   verdict.innerHTML = '<h2 class="yeah">Validation: accept</h2>';
   popup.appendChild(verdict);
-  button = getReloadButton("Next!");
-  popup.appendChild(button);
-  popup.classList.add("show");
+  if (reference_record) {
+    button = getReviewButton("Review");
+    popup.appendChild(button);
+    popup.classList.add("show");
+  } else {
+    button = getNextButton("Next");
+    popup.appendChild(button);
+    popup.classList.add("show");
+    button = getReviewButton("Review");
+    button.classList.add("hspace");
+    popup.appendChild(button);
+    popup.classList.add("show");
+  }
 }
 
 
@@ -339,10 +365,8 @@ function parseHypothesis(hypothesis) {
 }
 
 function setInstruction(text) {
-  //Disabled for now:
-  return;
-  //instruction = document.getElementById('instruction');
-  //instruction.innerHTML = text;
+  instruction = document.getElementById('instruction');
+  instruction.innerHTML = text;
 }
 
 function startTracking() {
@@ -357,7 +381,7 @@ function startTracking() {
     speechTracking = true;
     __processHypothesis(""); 
     colorAtStart(readingPrompt);
-    setInstruction("Read the prompt aloud. The speech recogniser tries track you and shows where it predicts you are.")
+    setInstruction("Read the prompt aloud.")
   } catch (e) {
     console.log("Unable to start speech tracking due to error: " +e);
     speechTracking = false;

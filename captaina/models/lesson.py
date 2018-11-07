@@ -19,6 +19,17 @@ class Prompt(modm.MongoModel):
     class Meta:
         indexes = [mongo.operations.IndexModel([('graph_id', 1)], unique = True)] 
 
+def check_prompt_list():
+    #Makes sure that all the prompts returned by graph-creator have a Prompt object
+    graphs_request = requests.get("http://graph-creator:5000/list-graphs")
+    graphs = graphs_request.json()
+    for graph_id, uniqued_text in graphs.items():
+        try:
+            prompt = Prompt(text=uniqued_text, graph_id=graph_id)
+            prompt.save(force_insert = True)
+        except mongo.errors.DuplicateKeyError:
+            pass #It's cool.
+
 class Lesson(modm.MongoModel):
     label = modm.fields.CharField(required = True)
     url_id = modm.fields.CharField(required = True)
@@ -26,6 +37,7 @@ class Lesson(modm.MongoModel):
             blank = True)
     created = modm.fields.DateTimeField(default = datetime.now)
     modified  = modm.fields.DateTimeField(default = datetime.now)
+    is_public = modm.fields.BooleanField(default = False)
 
     def save(self, *args, **kwargs):
         self.modified = datetime.now()
@@ -35,15 +47,16 @@ class Lesson(modm.MongoModel):
         indexes = [mongo.operations.IndexModel([('url_id', 1)], 
             unique = True, background = False)] 
 
-    def is_ready(self):
+    def graphs_ready(self):
         graphs_request = requests.get("http://graph-creator:5000/list-graphs")
         graphs = graphs_request.json()
         for prompt in self.prompts:
             if prompt.graph_id not in graphs:
-                print(prompt.graph_id)
                 return False
         return True
 
+    def is_ready(self):
+        return self.graphs_ready()
 
 def create_lesson_with_safe_url_id(label):
     lesson = Lesson()
@@ -63,6 +76,7 @@ def create_and_queue_lesson_from_form(form):
         raise ValueError("No sentences remain after filtering")
     for sentence in sentences:
         prompt = Prompt(text = sentence)
+        check_prompt_list()
         prompt = mongo_serial_unique_attribute(prompt, "graph_id", lesson.url_id)
         response = requests.post("http://graph-creator:5000/create-graph", 
                 json={'key': prompt.graph_id,

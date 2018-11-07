@@ -2,7 +2,7 @@ from flask import redirect, url_for, current_app, Blueprint, render_template, fl
 from flask import jsonify, Response
 from ..models import LessonRecord, AudioRecord, User, Prompt, Lesson
 from ..models import validate_audio_record_files
-from ..models import lesson_record_from_cookie
+from ..models import record_from_cookie
 import pymongo as mongo
 import itsdangerous
 
@@ -14,34 +14,41 @@ def log_audio():
     #Parse the data, handle missing values:
     try:
         record_cookie = data["record-cookie"]
-        lesson_record = lesson_record_from_cookie(record_cookie, 
+        record = record_from_cookie(record_cookie, 
                 current_app.config["SECRET_KEY"])
-        user = lesson_record.user
-        lesson = lesson_record.lesson
+        user = record.user
+        lesson = record.lesson
         graph_id = data["graph-id"]
         prompt = Prompt.objects.get({"graph_id": graph_id})
         filekey = data["file-key"]
         passed_validation = data["passed-validation"]
     #TODO: Answer better to bad requests
     except IndexError: #Some parameter was omitted from the request
+        current_app.logger.info("Missing parameters in log-audio request")
         return Response("Parameters omitted", status = 400, mimetype = "text/plain")
     except Prompt.DoesNotExist:
-        return Response("Invalid graph_id", status = 200, mimetype = "text/plain")
+        current_app.logger.info("Invalid graph_id in log-audio request")
+        return Response("Invalid graph_id", status = 400, mimetype = "text/plain")
+    if record.submitted:
+        abort(403)
     #Create audio record:
     audio_record = AudioRecord(user=user, prompt=prompt, filekey=filekey,
         passed_validation=passed_validation)
     if not validate_audio_record_files(audio_record, 
             current_app.config["AUDIO_UPLOAD_PATH"]):
+        current_app.logger.info("Audio or align not found in log-audio request")
         return Response("Audio or align not found", status = 200, mimetype = "text/plain")
     try:
-        audio_record.save()
+        audio_record.save(force_insert = True)
     except mongo.errors.DuplicateKeyError:
+        current_app.logger.info("Duplicate request in log-audio")
         abort(400) #The align or wav files are already in some record
     try:
-        lesson_record.audio_records.append(audio_record)
-        lesson_record.save()
+        record.audio_records.append(audio_record)
+        record.save()
         return Response("OK", status = 200, mimetype = "text/plain")
     except:
+        current_app.logger.info("Error in log-audio")
         return Response("Unknown error", status = 500, mimetype = "text/plain")
 
 @api_bp.route('/verify-record-cookie', methods=['POST'])
@@ -49,10 +56,13 @@ def verify_record_cookie():
     data = request.get_json()
     cookie = data["record-cookie"]
     try:
-        lesson_record_from_cookie(cookie, current_app.config["SECRET_KEY"])
-        resp = "OK"
-    except LessonRecord.DoesNotExist:
-        resp = "LessonRecord not found"
+        record = record_from_cookie(cookie, current_app.config["SECRET_KEY"])
+        if not record.submitted:
+            resp = "OK"
+        else:
+            resp = "Record already submitted"
+    except ValueError:
+        resp = "Record not found"
     except itsdangerous.BadData:
         resp = "Bad cookie"
     return Response(resp, status = 200, mimetype = "text/plain")

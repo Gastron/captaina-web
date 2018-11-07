@@ -66,7 +66,8 @@ def post_result_to_backend(record_cookie, graph_id, file_key, verdict):
         "graph-id": graph_id,
         "file-key": file_key,
         "passed-validation": verdict})
-    response = http_client.fetch("http://web/api/log-audio", 
+    #TODO: Fix magic URL
+    response = http_client.fetch("http://web/captaina/api/log-audio", 
             headers = {"content-type": "application/json"},
             method = 'POST',
             body = data)
