@@ -73,4 +73,5 @@ def change_password(username, new_plaintext_password):
     except User.DoesNotExist:
         raise ValueError("Username not found")
     user.set_password(new_plaintext_password)
+    user.save()
 
