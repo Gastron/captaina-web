@@ -506,6 +506,10 @@ hr.promptline {
 }
 
 
+.greenboard .comment {
+  color: #888178; /* Aalto gray */
+}
+
 
 input[type="radio"] {
   margin-top: -1px;

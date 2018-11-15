@@ -21,27 +21,31 @@
 
   <form action="" method="post" class="vspace">
     {% for word in word_alignment %}
-      <fieldset>
-        <legend class="reviewword">{{ word[0] }}</legend>
-        <button class="pure-button" onclick="sound.play('{{ word[1].word }}')" type=button>
-         Play </button>
-        <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
-        <input type="radio" name="{{ word[1].word }}" value="na" id="na">
-        <label for="na">Cannot rate</label>
-        <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
-        <input type="radio" name="{{ word[1].word }}" value="1" id="1">
-        <label for="1">1</label><span class="hspace">&nbsp;</span>
-        <input type="radio" name="{{ word[1].word }}" value="2" id="2">
-        <label for="2">2</label><span class="hspace">&nbsp;</span>
-        <input type="radio" name="{{ word[1].word }}" value="3" id="3">
-        <label for="3">3</label><span class="hspace">&nbsp;</span>
-        <input type="radio" name="{{ word[1].word }}" value="4" id="4">
-        <label for="4">4</label><span class="hspace">&nbsp;</span>
-        <input type="radio" name="{{ word[1].word }}" value="5" id="5">
-        <label for="5">5</label>
-      </fieldset> 
-      {% endfor %}
-    {{ form.csrf_token }}
+    <fieldset>
+      <legend class="reviewword">{{ word[0] }}</legend>
+      <button class="pure-button" onclick="sound.play('{{ word[1].word }}')" type=button>
+       Play </button>
+      <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+      <input type="radio" name="{{ word[1].word }}" value="na" id="na">
+      <label for="na">Cannot rate</label>
+      <span class="hspace">&nbsp;</span><span class="hspace">&nbsp;</span>
+      <input type="radio" name="{{ word[1].word }}" value="1" id="1">
+      <label for="1">1</label><span class="hspace">&nbsp;</span>
+      <input type="radio" name="{{ word[1].word }}" value="2" id="2">
+      <label for="2">2</label><span class="hspace">&nbsp;</span>
+      <input type="radio" name="{{ word[1].word }}" value="3" id="3">
+      <label for="3">3</label><span class="hspace">&nbsp;</span>
+      <input type="radio" name="{{ word[1].word }}" value="4" id="4">
+      <label for="4">4</label><span class="hspace">&nbsp;</span>
+      <input type="radio" name="{{ word[1].word }}" value="5" id="5">
+      <label for="5">5</label>
+    </fieldset> 
+    {% endfor %}
+    <fieldset>
+      <legend class="reviewword">Comment</legend>
+      <textarea class="comment" id="comment" name="comment"></textarea>
+    </fieldset>
+    <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
     <input type="submit" value="Submit" class="vspace pure-button"/>
   </form>
   </div>

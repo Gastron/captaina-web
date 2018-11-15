@@ -95,8 +95,10 @@ def see_review(lesson_url_id, graph_id):
     teacher_audio_records = get_references_for_prompt(lesson, prompt)
     try:
         reviews = AudioReview.objects.raw({"audio_record": student_audio_record.pk})
+        comments = [review.get_comment() for review in reviews if review.get_comment() is not None]
     except AudioReview.DoesNotExist:
-        reviews = None
+        reviews = []
+        comments = []
 
     #Student's aligns:
     student_matched_alignment = get_matched_alignment(student_audio_record,
@@ -117,6 +119,7 @@ def see_review(lesson_url_id, graph_id):
             lesson_record = lesson_record,
             audio_record = student_audio_record,
             word_list = matched_reviews, #TODO: Call this something else than word_list
+            comments = comments,
             teacher_alignments = teacher_matched_alignments)
 
 @lesson_bp.route('/<lesson_url_id>/<graph_id>/see_next_review')

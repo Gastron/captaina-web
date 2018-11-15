@@ -1,12 +1,15 @@
 import click
 from flask.cli import AppGroup, with_appcontext
+import json
 
 user_cli = AppGroup('user')
 lesson_cli = AppGroup('lesson')
+feedback_cli = AppGroup('feedback')
 
 def register_cli(app):
     app.cli.add_command(user_cli)
     app.cli.add_command(lesson_cli)
+    app.cli.add_command(feedback_cli)
 
 
 ### user ###
@@ -23,25 +26,6 @@ def create_user(username, plaintext_password, teacher):
         e.exit_code = 1
         raise e
 
-### user ###
-@user_cli.command('twins')
-@click.argument('username')
-@click.argument('plaintext-password')
-def create_user(username, plaintext_password):
-    from .models import create_user
-    try:
-        student = create_user(username + "_student", plaintext_password, False)
-        teacher = create_user(username + "_teacher", plaintext_password, True)
-        student.assignee = teacher.username
-        teacher.assignee = student.username
-        student.save()
-        teacher.save()
-    except ValueError as err:
-        e = click.ClickException(str(err))
-        e.exit_code = 1
-        raise e
-
-
 @user_cli.command('change-password')
 @click.argument('username')
 @click.argument('new-plaintext-password')
@@ -53,6 +37,8 @@ def change_password(username, new_plaintext_password):
         e = click.ClickException(str(err))
         e.exit_code = 1
         raise e
+
+
 
 
 ### lesson ###
@@ -72,4 +58,18 @@ def create_lesson(name, prompts_file):
             prompts.append(prompt)
         lesson.prompts = prompts
     lesson.save()
-             
+
+
+### feedback ###
+@feedback_cli.command('read')
+@click.option('--unread', is_flag=True)
+def read_feedback(unread):
+    from .models import Feedback
+    feedbacks = Feedback.objects.all()
+    if unread:
+        feedbacks = filter(lambda f: not f.read, feedbacks)
+    for feedback in feedbacks:
+        feedback.pretty_print()
+        feedback.read = True
+        feedback.save()
+
