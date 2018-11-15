@@ -146,30 +146,43 @@ def review_lesson_record(lesson_url_id, record_cookie):
         return redirect(url_for('teacher_bp.lesson_overview',
             lesson_url_id = lesson_url_id))
     matched = get_matched_alignment(audio_record, current_app.config["AUDIO_UPLOAD_PATH"])
-    form = EmptyForm() #For CSRF token
-    if request.method == 'POST' and form.validate_on_submit():
-        review = dict(request.form)
-        review.pop("csrf_token")
+    if request.method == 'POST':
+        review = extract_review(request)
         audio_review = AudioReview(reviewer = current_user.pk,
             audio_record = audio_record.pk,
             review = review)
         audio_review.save()
         flash("Ratings saved", category="success")
-        return redirect(url_for('teacher_bp.review_lesson_record',
-            lesson_url_id = lesson_url_id,
-            record_cookie = record_cookie))
+        next_audio_record = next_audio_record_to_review(lesson_record, current_user)
+        if next_audio_record is None:
+            flash("Reviews completed", category="success")
+            return redirect(url_for('teacher_bp.lesson_overview',
+                lesson_url_id = lesson_url_id))
+        else:
+            return redirect(url_for('teacher_bp.review_lesson_record',
+                lesson_url_id = lesson_url_id,
+                record_cookie = record_cookie))
     else:
         return render_template("review.html", 
-                form = form,
                 audio_record = audio_record,
                 word_alignment = matched)
 
+def extract_review(request):
+    review = dict(request.form)
+    try:
+        review.pop("_csrf_token")
+    except KeyError:
+        pass #Don't fail if this is not found, though it should be there.
+    review = {k: v[0] for k, v in review.items()} #get rid of unnecessary list encapsulation
+    return review
 
 def next_audio_record_to_review(lesson_record, user):
-    for audio_record in lesson_record.validated_audio_records():
+    for prompt in lesson_record.lesson.prompts:
+        print(prompt.text)
+        audio_record = lesson_record.get_audiorecord(prompt)
         try:
-            AudioReview.objects.get({"reviewer": user.pk,
-                "audio_record": audio_record.pk})
+            AudioReview.objects.raw({"reviewer": user.pk,
+                "audio_record": audio_record.pk}).first()
         except AudioReview.DoesNotExist:
             return audio_record
     return None

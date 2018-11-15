@@ -91,6 +91,14 @@
     {% endif %}
   </fieldset> 
   {% endfor %}
+  {% if comments %}
+  <fieldset>
+    <legend class="reviewword">Comment</legend>
+    {% for comment in comments %}
+    <p class="comment">{{comment}}</p>
+    {% endfor %}
+  </fieldset>
+  {% endif %}
   <a class="pure-button widebtn vspace"
        href="{{ url_for("lesson_bp.overview",
         lesson_url_id = lesson.url_id) }}">Back to lesson</a>

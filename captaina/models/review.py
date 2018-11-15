@@ -16,5 +16,16 @@ class AudioReview(modm.MongoModel):
         super().save(*args, **kwargs)
 
     def get_rating(self, word_id):
-        return self.review.get(word_id, ["na"])[0] #Deal with wierd list encapsulation
+        rating = self.review.get(word_id, "na")
+        if isinstance(rating, list):
+            return rating[0] #Deal with wierd list encapsulation
+        else:
+            return rating
+
+    def get_comment(self):
+        comment = self.review.get("comment")
+        if not comment: #Test for empty comment
+            return None
+        else:
+            return comment
 
