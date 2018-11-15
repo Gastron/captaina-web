@@ -144,13 +144,18 @@ class LessonRecord(modm.MongoModel):
         if not (self.is_complete() and self.submitted):
             return False
         from .review import AudioReview
-        validated_records = self.validated_audio_records()
-        for audio_record in validated_records:
+        for prompt in self.lesson.prompts:
+            audio_record = self.get_audiorecord(prompt)
             try:
                 AudioReview.objects.raw({"audio_record": audio_record.pk}).first()
             except AudioReview.DoesNotExist:
                 return False
         return True
+
+    def is_new(self):
+        #If there are no audio_records yet, it's new
+        return not self.audio_records
+
 
 class ReferenceRecord(modm.MongoModel):
     user = modm.fields.ReferenceField(User)

@@ -40,14 +40,16 @@ def create_lesson():
 def lesson_overview(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     records = LessonRecord.objects.raw({'lesson': lesson.pk}).order_by([('modified', mongo.DESCENDING)])
-    filtered = filter(lambda record: record.is_complete() and record.submitted, records)
-    filtered = filter(lambda record: 
-            next_audio_record_to_review(record, current_user) is not None, filtered)
-    record_cookies = map(lambda r: cookie_from_record(r, current_app.config["SECRET_KEY"]),
-            records)
+    records = filter(lambda record: record.is_complete() and record.submitted, records)
+    records = filter(lambda record: 
+            next_audio_record_to_review(record, current_user) is not None, records)
+    #Sometimes you need to be careful with python3 generators, as they might not fit well
+    #with jinja templates' loops, or such things. So make things lists:
+    records = list(map(lambda r: (r, cookie_from_record(r, current_app.config["SECRET_KEY"])),
+            records))
     return render_template('lesson_review.html', 
             lesson = lesson, 
-            records = zip(filtered, record_cookies),
+            records = records,
             reference_record = get_or_make_reference_record(current_user, lesson))
 
 @teacher_bp.route('/lesson/<lesson_url_id>/<graph_id>/read')
@@ -178,7 +180,6 @@ def extract_review(request):
 
 def next_audio_record_to_review(lesson_record, user):
     for prompt in lesson_record.lesson.prompts:
-        print(prompt.text)
         audio_record = lesson_record.get_audiorecord(prompt)
         try:
             AudioReview.objects.raw({"reviewer": user.pk,

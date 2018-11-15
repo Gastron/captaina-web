@@ -413,6 +413,7 @@ hr.promptline {
   text-align: left;
 }
 
+
 .newlessonblock {
   position: relative;
   min-width: 200px;
@@ -454,6 +455,13 @@ hr.promptline {
 .greenblock {
   border-color: #009e69; /* Aalto darkgreen */
 }
+.blockinfo {
+  display: inline-block;
+  margin-top: 1em;
+  margin-left: 1em;
+  color: #6a4593;
+}
+
 
 .hspace {
   margin-left: 0.5em;
@@ -509,6 +517,7 @@ hr.promptline {
 .greenboard .comment {
   color: #888178; /* Aalto gray */
 }
+
 
 
 input[type="radio"] {

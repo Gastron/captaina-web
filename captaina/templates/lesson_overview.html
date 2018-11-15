@@ -15,7 +15,12 @@
         <a class="pure-button" 
           href="{{ url_for('lesson_bp.see_review', 
 lesson_url_id = lesson.url_id, graph_id = prompt.graph_id) }}">
-          Review</a>
+          {% if lesson_record.reviews_exist() %}
+          See feedback
+          {% else %}
+          Review
+          {% endif %}
+        </a>
         {% else %}
         <a class="pure-button" 
           href="{{ url_for('lesson_bp.read',

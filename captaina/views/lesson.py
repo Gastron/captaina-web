@@ -16,10 +16,8 @@ def overview(lesson_url_id):
     lesson = get_or_404(Lesson, {'url_id': lesson_url_id})
     if not lesson.is_public:
         abort(403)
-    try:
-        lesson_record = get_record(current_user, lesson)
-    except ValueError:
-        #First time! 
+    lesson_record = get_or_make_lesson_record(current_user, lesson)
+    if lesson_record.is_new():
         return redirect(url_for('lesson_bp.read',
             lesson_url_id = lesson_url_id,
             graph_id = lesson.prompts[0].graph_id))
