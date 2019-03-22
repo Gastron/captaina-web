@@ -14,8 +14,6 @@ services:
     build:
       context: .
       dockerfile: environments/flask-nginx/Dockerfile
-    ports:
-      - "10001:80"
     volumes:
       - ./captaina:/app/captaina
       - ./config.py:/app/config.py
@@ -28,8 +26,6 @@ services:
     build:
       context: .
       dockerfile: environments/asr-master/Dockerfile
-    ports:
-      - "10443:443"
     command: ["--port=443", "--block=True"]
     volumes:
       - ./kaldi-gstreamer-server:/opt/kaldi-gstreamer-server

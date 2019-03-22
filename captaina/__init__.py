@@ -32,6 +32,6 @@ def create_app():
     from .cli import register_cli
     register_cli(app)
     register_jinja_filters(app)
-    prefix_application_path(app, "/captaina")
+    prefix_application_path(app, app.config['URL_PREFIX'])
     return app
 
