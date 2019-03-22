@@ -10,6 +10,6 @@ RUN apt-get update && apt-get install -y  \
     python3-pip \
     python3-gi && \
     pip3 install --upgrade cffi && \
-    pip3 install tornado pyyaml ws4py==0.3.2
+    pip3 install tornado==5.1 pyyaml ws4py==0.3.2
 
 ENTRYPOINT ["python3", "/opt/kaldi-gstreamer-server/kaldigstserver/master_server.py"]
