@@ -1,0 +1,34 @@
+version: '3.2'
+
+services:
+  web:
+    ports:
+      - "10002:80"
+    volumes:
+      - /l/captaina-demo/online-models/tellme-fin/s5/:/opt/s5
+      - ./instance:/app/instance
+
+  asr-worker:
+    volumes:
+      - /l/captaina-demo/online-models/tellme-fin/s5/:/opt/s5
+    command: ["-c","/opt/asr-conf.yaml", "-u","wss://asr-master:443/worker/ws/speech"]
+
+  asr-master:
+    ports:
+      - "11443:443"
+    volumes:
+      - /etc/ssl/certs/tellme.bundle.crt:/etc/ssl/public.crt
+      - /etc/ssl/private/private.key:/etc/ssl/private.key
+    command: ["--port=443", "--block=True", 
+      "--certfile=/etc/ssl/public.crt", "--keyfile=/etc/ssl/private.key",
+      "--cookietesturl=http://web/captaina-demo/api/verify-record-cookie"]
+
+  graph-creator:
+    volumes:
+      - /l/captaina-demo/online-models/tellme-fin/s5/:/opt/s5
+
+  db:
+    environment:
+      MONGO_INITDB_DATABASE: demo
+      MONGO_INITDB_ROOT_USERNAME: captaina
+      MONGO_INITDB_ROOT_PASSWORD: key

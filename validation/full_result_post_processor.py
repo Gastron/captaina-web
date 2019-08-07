@@ -10,6 +10,11 @@ import subprocess
 http_client = tornado.httpclient.HTTPClient()
 GRAPH_DIR = pathlib.Path(".")
 AUDIO_DIR = pathlib.Path(".")
+logger = logging.getLogger("full_post_processor")
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename="processor.log")
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 def validate(hyp, ref, max_miscues=3):
     #Make sure all reference words were found:
@@ -67,14 +72,14 @@ def post_result_to_backend(record_cookie, graph_id, file_key, verdict):
         "file-key": file_key,
         "passed-validation": verdict})
     #TODO: Fix magic URL
-    response = http_client.fetch("http://web/captaina/api/log-audio", 
+    response = http_client.fetch("http://web/captaina-demo/api/log-audio", 
             headers = {"content-type": "application/json"},
             method = 'POST',
             body = data)
     if response.body == b"OK":
-        logging.info("{id}: Result posted to backend".format(id=file_key))
+        logger.info("{id}: Result posted to backend".format(id=file_key))
     else:
-        logging.info("{id}: Saving to backend failed, message: {msg}".format(
+        logger.info("{id}: Saving to backend failed, message: {msg}".format(
             id=file_key,
             msg=response.body))
 
@@ -83,7 +88,7 @@ def parse(asr_output):
         data = json.loads(asr_output)
     except: #From 
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        logging.error("Failed to process JSON result: %s : %s " % (exc_type, exc_value))
+        logger.error("Failed to process JSON result: %s : %s " % (exc_type, exc_value))
         raise ValueError()
     best_hyp = data["result"]["hypotheses"][0]["transcript"].split()
     graph_id = data["graph-id"]
@@ -110,12 +115,12 @@ def do_post_processing(asr_output):
         write_output(json.dumps({"status": "error"}))
         return
     ref = get_ref(parsed["graph_id"])
-    logging.info("{id}: Validating (hyp vs. ref): {hyp} vs. {ref}".format(
+    logger.info("{id}: Validating (hyp vs. ref): {hyp} vs. {ref}".format(
         id=parsed["file_key"], 
         hyp = parsed["hyp"], 
         ref = ref))
     validation_verdict, reason = validate(hyp=parsed["hyp"], ref=ref)
-    logging.info("{id}: Validation verdict: {verdict}".format(
+    logger.info("{id}: Validation verdict: {verdict}".format(
         id=parsed["file_key"], 
         verdict = "Accepted" if validation_verdict else "Rejected"))
     save_alignment(parsed["file_key"], parsed["alignment"])

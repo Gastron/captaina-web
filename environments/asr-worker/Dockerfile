@@ -15,8 +15,7 @@ RUN apt-get update && apt-get install -y  \
     python3-gi && \
     pip install --upgrade cffi && \
     pip3 install --upgrade cffi && \
-    pip3 install tornado pyyaml ws4py==0.3.2
-
+    pip3 install tornado==5.1 pyyaml ws4py==0.3.2
 
 ENV GST_PLUGIN_PATH=/opt/gst-kaldi-nnet2-online/src/:/opt/kaldi/src/gst-plugin/
 
